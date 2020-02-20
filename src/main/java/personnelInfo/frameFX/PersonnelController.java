@@ -1,3 +1,8 @@
+/*
+ * Copyright © 2020 MRN-Design (brand owned by Manufacture-MRN sp. z o.o.) and Mateusz Niedbał
+ * As of January 2020, all rights in any software published by MRN-Design (brand owned by Manufacture-MRN sp. z o.o.) & Mateusz Niedbał will remain with the author. Contact the author with any permission requests.
+ */
+
 package personnelInfo.frameFX;
 
 
@@ -267,17 +272,16 @@ public class PersonnelController {
     }
 
     private void loadFile(File file,
-                          List<String[]> temp)
-             {
+                          List<String[]> temp) {
         if (file != null) {
             try {
                 Scanner scanner = new Scanner(file);
 
-            while (scanner.hasNextLine()) {
-                if (scanner.hasNextLine()) temp.add(scanner.nextLine().split(";"));
-                else temp.add(scanner.next().split(";"));
-            }
-            addCompanyInfoFromLoadedFile(temp);
+                while (scanner.hasNextLine()) {
+                    if (scanner.hasNextLine()) temp.add(scanner.nextLine().split(";"));
+                    else temp.add(scanner.next().split(";"));
+                }
+                addCompanyInfoFromLoadedFile(temp);
             } catch (FileNotFoundException ex) {
                 errorMessageDialog(ex,"Your try to write "+ERROR_IOExceptionMESSAGE);
             }
