@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="800.0" prefWidth="1000.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="personnelInfo.PersonnelController">
+<AnchorPane prefHeight="800.0" prefWidth="1000.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="personnelInfo.frameFX.PersonnelController">
   <MenuBar prefWidth="1000.0" useSystemMenuBar="true">
     <Menu mnemonicParsing="false" text="File">
       <MenuItem mnemonicParsing="false" onAction="#newCompany_MenuItemAction" text="New company" />
@@ -69,7 +69,7 @@
       <Label alignment="CENTER_RIGHT" font="$x2" layoutX="277.0" layoutY="23.0" prefWidth="119.0" text="Worker's ID:" textAlignment="RIGHT" />
       <TextField fx:id="workersIdTextField" editable="false" focusTraversable="false" layoutX="409.0" layoutY="21.0" prefHeight="24.0" prefWidth="84.0" />
       <ImageView fitHeight="100.0" fitWidth="150.0" layoutX="342.0" layoutY="559.0" pickOnBounds="true" preserveRatio="true">
-        <Image url="personnelInfo/logo.jpg" />
+        <Image url="@personnelInfo/logo.jpg" />
       </ImageView>
       <Button focusTraversable="false" font="$x2" layoutX="239.0" layoutY="324.0" minHeight="24.0" mnemonicParsing="false" onAction="#confirm_ButtonAction" prefHeight="37.0" prefWidth="256.0" text="Confirm" />
       <Label alignment="BOTTOM_LEFT" layoutX="14.0" layoutY="310.0" prefWidth="210.0" text="*  obligated fields" textAlignment="RIGHT">

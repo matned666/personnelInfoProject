@@ -1,4 +1,4 @@
-package personnelInfo;
+package personnelInfo.frameFX;
 
 
 import javafx.application.Platform;
@@ -157,11 +157,10 @@ public class PersonnelController {
 
     @FXML
     private void save_MenuItemAction() {
-        try {
-            if (company == null) throw new NullPointerException();
+        if (company != null) {
             company.sort(SortPersonType.ID, 1);
             getSortedDataToSaveToFile();
-        } catch (NullPointerException e) {
+        } else {
             alertMessageDialog(WARNING_CompanyNULLMessage, WARNING_CompanyNULLInformation);
         }
     }
@@ -307,8 +306,8 @@ public class PersonnelController {
         }
     }
 
-    private void prepareCompanyNameForSave_IfIsEmpty(){
-        if(company.getName() == null || company.getName().trim().equals(""))
+    private void prepareCompanyNameForSave_IfIsEmpty() {
+        if (company.getName() == null || company.getName().trim().equals(""))
             company.setName(companyNameTextField.getPromptText());
     }
 
@@ -433,31 +432,32 @@ public class PersonnelController {
         alert.setTitle("Exception Dialog");
         alert.setHeaderText("ERROR HAPPENS");
         alert.setContentText(String.valueOf(ex.getCause()));
-
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         ex.printStackTrace(pw);
         String exceptionText = sw.toString();
+        alert.getDialogPane().setExpandableContent(expContent(exceptionText));
+        alert.showAndWait();
+    }
 
+    private GridPane expContent(String exceptionText) {
+        GridPane.setVgrow(textArea_StackTraceInfo(exceptionText), Priority.ALWAYS);
+        GridPane.setHgrow(textArea_StackTraceInfo(exceptionText), Priority.ALWAYS);
+        GridPane expContent = new GridPane();
+        expContent.setMaxWidth(Double.MAX_VALUE);
         Label label = new Label("The exception stacktrace was:");
+        expContent.add(label, 0, 0);
+        expContent.add(textArea_StackTraceInfo(exceptionText), 0, 1);
+        return expContent;
+    }
 
+    private TextArea textArea_StackTraceInfo(String exceptionText) {
         TextArea textArea = new TextArea(exceptionText);
         textArea.setEditable(false);
         textArea.setWrapText(true);
-
         textArea.setMaxWidth(Double.MAX_VALUE);
         textArea.setMaxHeight(Double.MAX_VALUE);
-        GridPane.setVgrow(textArea, Priority.ALWAYS);
-        GridPane.setHgrow(textArea, Priority.ALWAYS);
-
-        GridPane expContent = new GridPane();
-        expContent.setMaxWidth(Double.MAX_VALUE);
-        expContent.add(label, 0, 0);
-        expContent.add(textArea, 0, 1);
-
-        alert.getDialogPane().setExpandableContent(expContent);
-
-        alert.showAndWait();
+        return textArea;
     }
 
     private void informationDialog() {

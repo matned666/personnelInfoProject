@@ -1,4 +1,4 @@
-package personnelInfo;
+package personnelInfo.frameFX;
 
 
 import javafx.scene.control.Button;
