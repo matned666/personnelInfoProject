@@ -12,7 +12,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import personnelInfo.mechanics.*;
+import personnelInfo.mechanics.Company;
+import personnelInfo.mechanics.Encrypting;
+import personnelInfo.mechanics.Person;
 import personnelInfo.mechanics.enums.SortPersonType;
 import personnelInfo.mechanics.enums.SortType;
 import personnelInfo.mechanics.enums.WorkersType;
@@ -152,7 +154,7 @@ public class PersonnelController {
     }
 
     @FXML
-    private void load_MenuItemAction() throws FileNotFoundException {
+    private void load_MenuItemAction() {
         loadFile();
     }
 
@@ -254,7 +256,7 @@ public class PersonnelController {
         }
     }
 
-    private void loadFile() throws FileNotFoundException {
+    private void loadFile() {
         FileChooser fileChooser = new FileChooser();
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PCSI files (*.pcsi)", "*.pcsi");
         fileChooser.getExtensionFilters().add(extFilter);
