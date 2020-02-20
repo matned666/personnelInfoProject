@@ -32,6 +32,7 @@ public class PersonnelController {
     private final static String INFORMATION_Information = "All rights reserved :-)";
     private final static String WARNING_WrongNumberMESSAGE = "Wrong number format!";
     private final static String WARNING_WrongNumberINFO = "Try it with numbers...";
+    private final static String ERROR_IOExceptionMESSAGE = " file has failed. Check it out!";
 
     //FXML fields
     @FXML
@@ -265,14 +266,19 @@ public class PersonnelController {
 
     private void loadFile(File file,
                           List<String[]> temp)
-            throws FileNotFoundException {
+             {
         if (file != null) {
-            Scanner scanner = new Scanner(file);
+            try {
+                Scanner scanner = new Scanner(file);
+
             while (scanner.hasNextLine()) {
                 if (scanner.hasNextLine()) temp.add(scanner.nextLine().split(";"));
                 else temp.add(scanner.next().split(";"));
             }
             addCompanyInfoFromLoadedFile(temp);
+            } catch (FileNotFoundException ex) {
+                errorMessageDialog(ex,"Your try to write "+ERROR_IOExceptionMESSAGE);
+            }
         }
     }
 
@@ -319,7 +325,7 @@ public class PersonnelController {
             writer.println(content);
             writer.close();
         } catch (IOException ex) {
-            errorMessageDialog(ex);
+            errorMessageDialog(ex,"Your try to write "+ERROR_IOExceptionMESSAGE);
         }
     }
 
@@ -427,10 +433,10 @@ public class PersonnelController {
         alert.showAndWait();
     }
 
-    private void errorMessageDialog(Throwable ex) {
+    private void errorMessageDialog(Throwable ex, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Exception Dialog");
-        alert.setHeaderText("ERROR HAPPENS");
+        alert.setHeaderText(message);
         alert.setContentText(String.valueOf(ex.getCause()));
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
