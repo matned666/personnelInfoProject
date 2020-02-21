@@ -9,6 +9,7 @@ package personnelInfo.frameFX;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -17,6 +18,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 import personnelInfo.mechanics.Company;
 import personnelInfo.mechanics.Encrypting;
 import personnelInfo.mechanics.Person;
@@ -55,6 +59,8 @@ public class PersonnelController {
     @FXML
     public TextField encryptMoveField;
     @FXML
+    public Label labelBottomInformation;
+    @FXML
     private TextField nameTextField;
     @FXML
     private TextField surnameTextField;
@@ -74,6 +80,7 @@ public class PersonnelController {
     private ChoiceBox<String> workersTypeShowChoiceBox;
 
     //variables
+    private String changeLog;
     private List<WorkerField> buttonsWithWorkers;
     private Company company;
     private Person actualPerson;
@@ -86,8 +93,10 @@ public class PersonnelController {
     //FXML methods section
     @FXML
     private void initialize() {
+        changeLog = "";
         initializeChoiceBoxes();
         makeNewCompany_ButtonAction();
+        message("Welcome");
     }
 
     @FXML
@@ -99,14 +108,17 @@ public class PersonnelController {
             actualPerson.setPosition(positionTextField.getText());
             actualPerson.setWorkerType(workerType(workerStatusChoiceBox.getValue().trim()));
             actualWorkerButton.setText(actualPerson.print());
+            message("Personal data changed");
         } else {
             alertMessageDialog(WARNING_NoPersonSelectedMessage, WARNING_NoPersonSelectedInformation + ", type his data again and accept.");
+            message("Personal data NOT changed");
         }
     }
 
     @FXML
     private void makeNewCompany_ButtonAction() {
         vBoxWithWorkers.getChildren().clear();
+        clearAllTextFields();
         company = new Company(companyNameTextField.getText(), getNumberOfWorkers());
         buttonsWithWorkers = new LinkedList<>();
         for (int i = 0; i < company.getListOfWorkers().size(); i++) {
@@ -114,6 +126,8 @@ public class PersonnelController {
             personButtonFactoring(buttonsWithWorkers.get(i).getButton(), i);
             vBoxWithWorkers.getChildren().add(buttonsWithWorkers.get(i).getButton());
         }
+        changeLog = "";
+        message("New company "+companyNameTextField.getText()+"has been set with "+getNumberOfWorkers()+" worker fields.");
     }
 
     @FXML
@@ -122,6 +136,7 @@ public class PersonnelController {
         company.addWorker();
         numberOfWorkersTextField.setText(String.valueOf(company.getListOfWorkers().size()));
         refreshWorkerButtons();
+        message("New empty worker field added");
     }
 
     @FXML
@@ -129,11 +144,15 @@ public class PersonnelController {
         if (company == null) {
             makeNewCompany_ButtonAction();
             alertMessageDialog(WARNING_CompanyNULLMessage, WARNING_CompanyNULLInformation);
+            message("Unsuccessful worker removal. No company was selected.");
         } else if (actualPerson == null || company.getListOfWorkers().size() <= 0) {
             alertMessageDialog(WARNING_NoPersonSelectedMessage, WARNING_NoPersonSelectedInformation + " and try to remove him again.");
+            message("Unsuccessful worker removal. No worker was selected.");
         } else {
             company.removeWorker(actualPerson.getID());
+            message("Successful worker +"+actualPerson.getNAME()+" "+actualPerson.getSURNAME()+" removal.");
             refreshWorkerButtons();
+
         }
     }
 
@@ -141,16 +160,20 @@ public class PersonnelController {
     private void searchWorkers_ButtonAction() {
         try {
             sort(sortByChoiceBox.getValue());
+            message("Successful sort by "+sortByChoiceBox.getValue());
             refreshWorkerButtons();
         } catch (Exception ex) {
             System.out.println("error");
+            message("Unsuccessful sort. Error message.");
         }
     }
 
     @FXML
     private void newCompany_MenuItemAction() {
         numberOfWorkersTextField.setText("0");
+        clearAllTextFields();
         makeNewCompany_ButtonAction();
+        message("Completely new company has been set.");
     }
 
     @FXML
@@ -168,14 +191,34 @@ public class PersonnelController {
         if (company != null) {
             company.sort(SortPersonType.ID, 1);
             getSortedDataToSaveToFile();
+            message("Company saved.");
         } else {
             alertMessageDialog(WARNING_CompanyNULLMessage, WARNING_CompanyNULLInformation);
+            message("Company save ERROR!!");
         }
     }
 
     @FXML
     private void information_MenuItemAction() {
         informationDialog();
+    }
+
+    @FXML
+    public void encryptOK_ButtonAction() {
+        encryptMoveField.setText(String.valueOf(getEncryptMove_Number()));
+        message("Encrypt level set.");
+    }
+
+    @FXML
+    public void renameCompany() {
+
+        if (company != null) {
+            company.setName(companyNameTextField.getText());
+            message("Company name set.");
+        } else {
+            alertMessageDialog(WARNING_CompanyNULLMessage, WARNING_CompanyNULLInformation);
+            message("Company name NOT set. NO company selected.");
+        }
     }
 
     // rest of methods
@@ -252,15 +295,6 @@ public class PersonnelController {
         company.sort(getSortPersonType_BySortText(value), 1);
     }
 
-    public void renameCompany() {
-
-        if (company != null) {
-            company.setName(companyNameTextField.getText());
-        } else {
-            alertMessageDialog(WARNING_CompanyNULLMessage, WARNING_CompanyNULLInformation);
-        }
-    }
-
     private void loadFile() {
         FileChooser fileChooser = new FileChooser();
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PCSI files (*.pcsi)", "*.pcsi");
@@ -281,27 +315,31 @@ public class PersonnelController {
                     if (scanner.hasNextLine()) temp.add(scanner.nextLine().split(";"));
                     else temp.add(scanner.next().split(";"));
                 }
+                changeLog = "";
+                message("Company loaded.");
                 addCompanyInfoFromLoadedFile(temp);
             } catch (FileNotFoundException ex) {
                 errorMessageDialog(ex,"Your try to write "+ERROR_IOExceptionMESSAGE);
+                message("Error while loading");
             }
         }
     }
 
     private void addCompanyInfoFromLoadedFile(List<String[]> temp) {
-        companyNameTextField.setText(Encrypting.decrypt(temp.get(0)[0].trim(), getEncryptMove_Number()));
-        numberOfWorkersTextField.setText(temp.get(1)[0].trim());
+        encryptMoveField.setText(temp.get(0)[0].trim());
+        companyNameTextField.setText(Encrypting.decrypt(temp.get(1)[0].trim(), getEncryptMove_Number()));
+        numberOfWorkersTextField.setText(temp.get(2)[0].trim());
         makeNewCompany_ButtonAction();
-        addCompanyDataFromLoadedFile(temp);
+        addWorkersListFromLoadedFile(temp);
     }
 
-    private void addCompanyDataFromLoadedFile(List<String[]> temp) {
-        for (int i = 2; i < temp.size() - 1; i++) {
-            company.getListOfWorkers().get(i - 2).setNAME(Encrypting.decrypt(temp.get(i)[1], getEncryptMove_Number()));
-            company.getListOfWorkers().get(i - 2).setSURNAME(Encrypting.decrypt(temp.get(i)[2], getEncryptMove_Number()));
-            company.getListOfWorkers().get(i - 2).setAGE(Integer.parseInt(temp.get(i)[3].trim()));
-            company.getListOfWorkers().get(i - 2).setPosition(Encrypting.decrypt(temp.get(i)[4], getEncryptMove_Number()));
-            company.getListOfWorkers().get(i - 2).setWorkerType(returnWorkersType(Encrypting.decrypt(temp.get(i)[5], getEncryptMove_Number())));
+    private void addWorkersListFromLoadedFile(List<String[]> temp) {
+        for (int i = 3; i < temp.size() - 1; i++) {
+            company.getListOfWorkers().get(i - 3).setNAME(Encrypting.decrypt(temp.get(i)[1], getEncryptMove_Number()));
+            company.getListOfWorkers().get(i - 3).setSURNAME(Encrypting.decrypt(temp.get(i)[2], getEncryptMove_Number()));
+            company.getListOfWorkers().get(i - 3).setAGE(Integer.parseInt(temp.get(i)[3].trim()));
+            company.getListOfWorkers().get(i - 3).setPosition(Encrypting.decrypt(temp.get(i)[4], getEncryptMove_Number()));
+            company.getListOfWorkers().get(i - 3).setWorkerType(returnWorkersType(Encrypting.decrypt(temp.get(i)[5], getEncryptMove_Number())));
         }
     }
 
@@ -312,10 +350,20 @@ public class PersonnelController {
             fileChooser.getExtensionFilters().add(extFilter);
             File file = fileChooser.showSaveDialog(new Stage());
             prepareCompanyNameForSave_IfIsEmpty();
+            prepareEncryptMoveFieldForSave_IfItIsEmpty();
             if (file != null) {
-                saveTextToFile(Encrypting.encrypt(company.toString(), getEncryptMove_Number()), file);
+                saveTextToFile(Encrypting.encrypt(encryptMoveField.getText()+";\n"+company.toString(), getEncryptMove_Number()), file);
             }
         }
+    }
+
+    private void prepareEncryptMoveFieldForSave_IfItIsEmpty() {
+        if(!is_CorrectNumeric(encryptMoveField.getPromptText())) {
+            encryptMoveField.setText("0");
+            if(Integer.parseInt(encryptMoveField.getText()) < 3)
+                encryptMoveField.setText("3");
+        }
+        alertMessageDialog("Insufficient encrypt level","It was automatically set to '3'.");
     }
 
     private void prepareCompanyNameForSave_IfIsEmpty() {
@@ -478,6 +526,23 @@ public class PersonnelController {
         alert.setHeaderText(PersonnelController.INFORMATION_Message);
         alert.setContentText(PersonnelController.INFORMATION_Information);
         alert.showAndWait();
+    }
+
+    private void clearAllTextFields(){
+        ageTextField.clear();
+        nameTextField.clear();
+        surnameTextField.clear();
+        workersIdTextField.clear();
+        positionTextField.clear();
+        companyNameTextField.clear();
+    }
+
+    private void message(String message){
+        LocalTime logTime = new LocalTime();
+        LocalDate logDate = new LocalDate();
+        message += " "+logTime+" "+logDate;
+        labelBottomInformation.setText(message);
+        changeLog += "message:"+message;
     }
 
 }

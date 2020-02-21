@@ -4,16 +4,19 @@
   ~ Copyright © 2020 MRN-Design (brand owned by Manufacture-MRN sp. z o.o.) and Mateusz Niedbał
   ~ As of January 2020, all rights in any software published by MRN-Design (brand owned by Manufacture-MRN sp. z o.o.) & Mateusz Niedbał will remain with the author. Contact the author with any permission requests.
   -->
-
+<?import java.lang.*?>
+<?import javafx.collections.*?>
 <?import javafx.collections.FXCollections?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.*?>
-<?import java.lang.*?>
-<AnchorPane prefHeight="800.0" prefWidth="1000.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="personnelInfo.frameFX.PersonnelController">
+
+<AnchorPane prefHeight="811.0" prefWidth="1000.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="personnelInfo.frameFX.PersonnelController">
   <MenuBar prefWidth="1000.0" useSystemMenuBar="true">
     <Menu mnemonicParsing="false" text="File">
       <MenuItem mnemonicParsing="false" onAction="#newCompany_MenuItemAction" text="New company" />
@@ -63,7 +66,7 @@
       <Button focusTraversable="false" font="$x2" layoutX="114.0" layoutY="59.0" mnemonicParsing="false" onAction="#searchWorkers_ButtonAction" prefHeight="37.0" prefWidth="308.0" text="Show workers" />
       <Label layoutX="22.0" layoutY="65.0" prefWidth="73.0" text="Additional search" visible="false" wrapText="true" />
     </AnchorPane>
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="680.0" prefWidth="523.0">
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="671.0" prefWidth="523.0">
       <TextField fx:id="nameTextField" focusTraversable="false" layoutX="133.0" layoutY="60.0" prefHeight="37.0" prefWidth="362.0" promptText="name" />
       <Label alignment="CENTER_RIGHT" font="$x2" layoutY="67.0" prefWidth="119.0" text="*Name:" textAlignment="RIGHT" />
       <TextField fx:id="surnameTextField" focusTraversable="false" layoutX="133.0" layoutY="108.0" prefHeight="37.0" prefWidth="362.0" promptText="surname" />
@@ -95,6 +98,7 @@
       </ChoiceBox>
       <Label alignment="CENTER_RIGHT" font="$x2" layoutX="44.0" layoutY="396.0" prefWidth="119.0" text="Encrypt level:" textAlignment="RIGHT" />
       <TextField id="numberOfWorkersTextField" fx:id="encryptMoveField" alignment="CENTER" focusTraversable="false" layoutX="165.0" layoutY="396.0" prefHeight="24.0" prefWidth="59.0" text="3" />
+      <Button focusTraversable="false" font="$x2" layoutX="236.0" layoutY="390.0" minHeight="24.0" mnemonicParsing="false" onAction="#encryptOK_ButtonAction" prefHeight="37.0" prefWidth="73.0" text="OK" />
     </AnchorPane>
   </SplitPane>
   <TextField fx:id="numberOfWorkersTextField" focusTraversable="false" layoutX="741.0" layoutY="38.0" prefHeight="37.0" prefWidth="73.0" promptText="0" text="0" />
@@ -111,4 +115,5 @@
       <Font size="9.0" />
     </font>
   </Button>
+  <Label fx:id="labelBottomInformation" font="$x2" layoutX="14.0" layoutY="773.0" prefWidth="966.0" text="Workers list:" />
 </AnchorPane>
