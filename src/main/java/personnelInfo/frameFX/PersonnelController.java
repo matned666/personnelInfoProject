@@ -23,6 +23,7 @@ import org.joda.time.LocalTime;
 import personnelInfo.mechanics.Company;
 import personnelInfo.mechanics.Encrypting;
 import personnelInfo.mechanics.Person;
+import personnelInfo.mechanics.StringToInt;
 import personnelInfo.mechanics.enums.SortPersonType;
 import personnelInfo.mechanics.enums.SortType;
 import personnelInfo.mechanics.enums.WorkersType;
@@ -87,14 +88,17 @@ public class PersonnelController {
     private Company company;
     private Person actualPerson;
     private Button actualWorkerButton;
+    private StringToInt convert;
 
     //Constructor
     public PersonnelController() {
+
     }
 
     //FXML methods section
     @FXML
     private void initialize() {
+        convert = new StringToInt();
         changeLog = "";
         initializeChoiceBoxes();
         makeNewCompany_ButtonAction();
@@ -104,7 +108,7 @@ public class PersonnelController {
     @FXML
     private void confirm_ButtonAction() {
         if (company != null && actualPerson != null) {
-            actualPerson.setAGE(Integer.parseInt(ageTextField.getText()));
+            actualPerson.setAGE(convert.i(ageTextField.getText()));
             actualPerson.setNAME(nameTextField.getText());
             actualPerson.setSURNAME(surnameTextField.getText());
             actualPerson.setPosition(positionTextField.getText());
@@ -343,7 +347,7 @@ public class PersonnelController {
         for (int i = 0; i < company.getListOfWorkers().size(); i++) {
             company.getListOfWorkers().get(i).setNAME(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[1], getEncryptMove_Number()));
             company.getListOfWorkers().get(i).setSURNAME(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[2], getEncryptMove_Number()));
-            company.getListOfWorkers().get(i).setAGE(Integer.parseInt(listOfElements_LoadedFromFile.get(i + 3)[3].trim()));
+            company.getListOfWorkers().get(i).setAGE(convert.i(listOfElements_LoadedFromFile.get(i + 3)[3].trim()));
             company.getListOfWorkers().get(i).setPosition(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[4], getEncryptMove_Number()));
             company.getListOfWorkers().get(i).setWorkerType(returnWorkersType(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[5], getEncryptMove_Number())));
         }
@@ -351,7 +355,7 @@ public class PersonnelController {
 
     private void loadAction5_LoadChangeLog(List<String[]> listOfElements_LoadedFromFile) {
         if (listOfElements_LoadedFromFile.size() > 0)
-            changeLog = Encrypting.decrypt(listOfElements_LoadedFromFile.get(listOfElements_LoadedFromFile.size() - 1)[0], Integer.parseInt(encryptMoveField.getText()));
+            changeLog = Encrypting.decrypt(listOfElements_LoadedFromFile.get(listOfElements_LoadedFromFile.size() - 1)[0], convert.i(encryptMoveField.getText()));
     }
 
     // save to file action
@@ -427,7 +431,7 @@ public class PersonnelController {
         int encryptedMovementNumber_FromTextField;
         if (!is_CorrectNumeric(encryptMoveField.getText())) {
             encryptedMovementNumber_FromTextField = DEFAULT_ENCRYPT_LEVEL;
-        } else encryptedMovementNumber_FromTextField = Integer.parseInt(encryptMoveField.getText());
+        } else encryptedMovementNumber_FromTextField = convert.i(encryptMoveField.getText());
         if (encryptedMovementNumber_FromTextField < DEFAULT_ENCRYPT_LEVEL) {
             encryptMoveField.setText(String.valueOf(DEFAULT_ENCRYPT_LEVEL));
             encryptedMovementNumber_FromTextField = DEFAULT_ENCRYPT_LEVEL;
@@ -440,7 +444,7 @@ public class PersonnelController {
         int numberOfWorkers_FromTextField;
         if (!is_CorrectNumeric(numberOfWorkersTextField.getText())) {
             numberOfWorkers_FromTextField = 0;
-        } else numberOfWorkers_FromTextField = Integer.parseInt(numberOfWorkersTextField.getText());
+        } else numberOfWorkers_FromTextField = convert.i(numberOfWorkersTextField.getText());
         return numberOfWorkers_FromTextField;
     }
 
@@ -489,7 +493,7 @@ public class PersonnelController {
             return false;
         }
         try {
-            Integer.parseInt(textFieldContent);
+            convert.i(textFieldContent);
         } catch (NumberFormatException nfe) {
             alertMessageDialog(WARNING_WrongNumberMESSAGE, WARNING_WrongNumberINFO);
             return false;
