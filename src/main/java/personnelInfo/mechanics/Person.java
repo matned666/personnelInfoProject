@@ -68,7 +68,7 @@ public class Person {
         this.AGE = builder.AGE;
         this.position = builder.position;
         this.ID = builder.ID;
-        this.workerType = WorkersType.ACTUAL_WORKER;
+        this.workerType = WorkersType.ACTUAL;
     }
 
     public String print() {

@@ -4,18 +4,15 @@
   ~ Copyright © 2020 MRN-Design (brand owned by Manufacture-MRN sp. z o.o.) and Mateusz Niedbał
   ~ As of January 2020, all rights in any software published by MRN-Design (brand owned by Manufacture-MRN sp. z o.o.) & Mateusz Niedbał will remain with the author. Contact the author with any permission requests.
   -->
-<?import java.lang.*?>
-<?import javafx.collections.*?>
+
 <?import javafx.collections.FXCollections?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.*?>
-
+<?import java.lang.*?>
 <AnchorPane prefHeight="811.0" prefWidth="1000.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="personnelInfo.frameFX.PersonnelController">
   <MenuBar prefWidth="1000.0" useSystemMenuBar="true">
     <Menu mnemonicParsing="false" text="File">
@@ -115,5 +112,8 @@
       <Font size="9.0" />
     </font>
   </Button>
-  <Label fx:id="labelBottomInformation" font="$x2" layoutX="14.0" layoutY="773.0" prefWidth="966.0" text="Workers list:" />
+  <Label fx:id="labelBottomInformation" alignment="TOP_LEFT" font="$x1" layoutX="136.0" layoutY="773.0"
+         prefHeight="37.0" prefWidth="842.0" text="Workers list:" wrapText="true"/>
+  <Button focusTraversable="false" font="$x1" layoutX="13.0" layoutY="774.0" minHeight="24.0" mnemonicParsing="false"
+          onAction="#showChangeLogAction" prefHeight="24.0" prefWidth="119.0" text="Show change log"/>
 </AnchorPane>

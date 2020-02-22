@@ -9,7 +9,6 @@ package personnelInfo.frameFX;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -35,6 +34,8 @@ import java.util.Scanner;
 
 public class PersonnelController {
 
+    private final static String CHANGE_LOG_SEPARATOR = " <<< message";
+    private final static int DEFAULT_ENCRYPT_LEVEL = 3;
     private final static String WARNING_CompanyNULLMessage = "Company wasn't made yet!!";
     private final static String WARNING_CompanyNULLInformation = "It shouldn't have happen. Try to make a new company.";
     private final static String WARNING_NoPersonSelectedMessage = "No worker selected!!";
@@ -80,6 +81,7 @@ public class PersonnelController {
     private ChoiceBox<String> workersTypeShowChoiceBox;
 
     //variables
+    private DateTime startTime;
     private String changeLog;
     private List<WorkerField> buttonsWithWorkers;
     private Company company;
@@ -117,6 +119,7 @@ public class PersonnelController {
 
     @FXML
     private void makeNewCompany_ButtonAction() {
+        changeLog = "";
         vBoxWithWorkers.getChildren().clear();
         clearAllTextFields();
         company = new Company(companyNameTextField.getText(), getNumberOfWorkers());
@@ -126,8 +129,8 @@ public class PersonnelController {
             personButtonFactoring(buttonsWithWorkers.get(i).getButton(), i);
             vBoxWithWorkers.getChildren().add(buttonsWithWorkers.get(i).getButton());
         }
-        changeLog = "";
-        message("New company "+companyNameTextField.getText()+"has been set with "+getNumberOfWorkers()+" worker fields.");
+        startTime = new DateTime();
+        startMessage();
     }
 
     @FXML
@@ -183,14 +186,14 @@ public class PersonnelController {
 
     @FXML
     private void load_MenuItemAction() {
-        loadFile();
+        loadAction1_LoadFile();
     }
 
     @FXML
     private void save_MenuItemAction() {
         if (company != null) {
             company.sort(SortPersonType.ID, 1);
-            getSortedDataToSaveToFile();
+            saveAction1_PrepareData_ForSave();
             message("Company saved.");
         } else {
             alertMessageDialog(WARNING_CompanyNULLMessage, WARNING_CompanyNULLInformation);
@@ -221,13 +224,17 @@ public class PersonnelController {
         }
     }
 
+    public void showChangeLogAction() {
+        changeLogLabel();
+    }
+
     // rest of methods
     private void initializeChoiceBoxes() {
         sortByChoiceBox.setValue(SortType.SORT_BY_ID.toString());
         sortByChoiceBox.setItems(getSortByChoiceBoxList());
-        workersTypeShowChoiceBox.setValue(WorkersType.ACTUAL_WORKER.toString());
+        workersTypeShowChoiceBox.setValue(WorkersType.ACTUAL_AND_REMOVED.toString());
         workersTypeShowChoiceBox.setItems(getWorkersType_Sort_ChoiceBoxList());
-        workerStatusChoiceBox.setValue(WorkersType.ACTUAL_WORKER.toString());
+        workerStatusChoiceBox.setValue(WorkersType.ACTUAL.toString());
         workerStatusChoiceBox.setItems(getWorkersTypeList());
     }
 
@@ -241,6 +248,7 @@ public class PersonnelController {
                     actualButton++;
                 }
             }
+            companyNameTextField.setText(company.getName());
         } else {
             alertMessageDialog(WARNING_CompanyNULLMessage, WARNING_CompanyNULLInformation);
         }
@@ -261,8 +269,7 @@ public class PersonnelController {
 
     private boolean sortStatement_ForAllWorkers(int idCounter) {
         return (returnWorkersType(workersTypeShowChoiceBox.getValue()) == company.getListOfWorkers().get(idCounter).getWorkerType()
-                || returnWorkersType(workersTypeShowChoiceBox.getValue()) == WorkersType.ACTUAL_AND_REMOVED)
-                && (company.getListOfWorkers().get(idCounter).print().toLowerCase().contains(additionalSearchTextField.getText()));
+                || returnWorkersType(workersTypeShowChoiceBox.getValue()) == WorkersType.ACTUAL_AND_REMOVED);
     }
 
     private void clearVBoxWithWorkersList() {
@@ -291,33 +298,32 @@ public class PersonnelController {
         button.setWrapText(true);
     }
 
-    private void sort(String value) {
-        company.sort(getSortPersonType_BySortText(value), 1);
-    }
+    // load file action
 
-    private void loadFile() {
+    private void loadAction1_LoadFile() {
         FileChooser fileChooser = new FileChooser();
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PCSI files (*.pcsi)", "*.pcsi");
         fileChooser.getExtensionFilters().add(extFilter);
         File file = fileChooser.showOpenDialog(new Stage());
-        List<String[]> temp = new LinkedList<>();
-        loadFile(file, temp);
+        List<String[]> listOfElements_LoadedFromFile = new LinkedList<>();
+        loadAction2_LoadFile(file, listOfElements_LoadedFromFile);
         refreshWorkerButtons();
+        loadAction5_LoadChangeLog(listOfElements_LoadedFromFile);
+        startMessage();
     }
 
-    private void loadFile(File file,
-                          List<String[]> temp) {
+    private void loadAction2_LoadFile(File file,
+                                      List<String[]> listOfElements_LoadedFromFile) {
         if (file != null) {
             try {
                 Scanner scanner = new Scanner(file);
-
                 while (scanner.hasNextLine()) {
-                    if (scanner.hasNextLine()) temp.add(scanner.nextLine().split(";"));
-                    else temp.add(scanner.next().split(";"));
+                    if (scanner.hasNextLine()) listOfElements_LoadedFromFile.add(scanner.nextLine().split(";"));
+                    else listOfElements_LoadedFromFile.add(scanner.next().split(";"));
                 }
                 changeLog = "";
                 message("Company loaded.");
-                addCompanyInfoFromLoadedFile(temp);
+                loadAction3_SetCompanyMakingTextFields(listOfElements_LoadedFromFile);
             } catch (FileNotFoundException ex) {
                 errorMessageDialog(ex,"Your try to write "+ERROR_IOExceptionMESSAGE);
                 message("Error while loading");
@@ -325,54 +331,52 @@ public class PersonnelController {
         }
     }
 
-    private void addCompanyInfoFromLoadedFile(List<String[]> temp) {
-        encryptMoveField.setText(temp.get(0)[0].trim());
-        companyNameTextField.setText(Encrypting.decrypt(temp.get(1)[0].trim(), getEncryptMove_Number()));
-        numberOfWorkersTextField.setText(temp.get(2)[0].trim());
+    private void loadAction3_SetCompanyMakingTextFields(List<String[]> listOfElements_LoadedFromFile) {
+        encryptMoveField.setText(listOfElements_LoadedFromFile.get(0)[0]);
+        numberOfWorkersTextField.setText(listOfElements_LoadedFromFile.get(2)[0].trim());
         makeNewCompany_ButtonAction();
-        addWorkersListFromLoadedFile(temp);
+        setCompanyName(Encrypting.decrypt(listOfElements_LoadedFromFile.get(1)[0].trim(), getEncryptMove_Number()));
+        loadAction4_addWorkers_FromLoadedFile(listOfElements_LoadedFromFile);
     }
 
-    private void addWorkersListFromLoadedFile(List<String[]> temp) {
-        for (int i = 3; i < temp.size() - 1; i++) {
-            company.getListOfWorkers().get(i - 3).setNAME(Encrypting.decrypt(temp.get(i)[1], getEncryptMove_Number()));
-            company.getListOfWorkers().get(i - 3).setSURNAME(Encrypting.decrypt(temp.get(i)[2], getEncryptMove_Number()));
-            company.getListOfWorkers().get(i - 3).setAGE(Integer.parseInt(temp.get(i)[3].trim()));
-            company.getListOfWorkers().get(i - 3).setPosition(Encrypting.decrypt(temp.get(i)[4], getEncryptMove_Number()));
-            company.getListOfWorkers().get(i - 3).setWorkerType(returnWorkersType(Encrypting.decrypt(temp.get(i)[5], getEncryptMove_Number())));
+    private void loadAction4_addWorkers_FromLoadedFile(List<String[]> listOfElements_LoadedFromFile) {
+        for (int i = 0; i < company.getListOfWorkers().size(); i++) {
+            company.getListOfWorkers().get(i).setNAME(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[1], getEncryptMove_Number()));
+            company.getListOfWorkers().get(i).setSURNAME(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[2], getEncryptMove_Number()));
+            company.getListOfWorkers().get(i).setAGE(Integer.parseInt(listOfElements_LoadedFromFile.get(i + 3)[3].trim()));
+            company.getListOfWorkers().get(i).setPosition(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[4], getEncryptMove_Number()));
+            company.getListOfWorkers().get(i).setWorkerType(returnWorkersType(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[5], getEncryptMove_Number())));
         }
     }
 
-    private void getSortedDataToSaveToFile() {
+    private void loadAction5_LoadChangeLog(List<String[]> listOfElements_LoadedFromFile) {
+        if (listOfElements_LoadedFromFile.size() > 0)
+            changeLog = Encrypting.decrypt(listOfElements_LoadedFromFile.get(listOfElements_LoadedFromFile.size() - 1)[0], Integer.parseInt(encryptMoveField.getText()));
+    }
+
+    // save to file action
+
+    private void saveAction1_PrepareData_ForSave() {
         if (company != null) {
             FileChooser fileChooser = new FileChooser();
             FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PCSI files (*.pcsi)", "*.pcsi");
             fileChooser.getExtensionFilters().add(extFilter);
             File file = fileChooser.showSaveDialog(new Stage());
-            prepareCompanyNameForSave_IfIsEmpty();
-            prepareEncryptMoveFieldForSave_IfItIsEmpty();
+            saveAction2_prepareCompanyName_IfIsEmpty();
+            changeLog += new DateTime() + CHANGE_LOG_SEPARATOR;
             if (file != null) {
-                saveTextToFile(Encrypting.encrypt(encryptMoveField.getText()+";\n"+company.toString(), getEncryptMove_Number()), file);
+                saveAction3_SaveTextToFile(Encrypting.encrypt(encryptMoveField.getText() + ";\n" + company.toString() + changeLog, getEncryptMove_Number()), file);
             }
         }
     }
 
-    private void prepareEncryptMoveFieldForSave_IfItIsEmpty() {
-        if(!is_CorrectNumeric(encryptMoveField.getPromptText())) {
-            encryptMoveField.setText("0");
-            if(Integer.parseInt(encryptMoveField.getText()) < 3)
-                encryptMoveField.setText("3");
-        }
-        alertMessageDialog("Insufficient encrypt level","It was automatically set to '3'.");
-    }
-
-    private void prepareCompanyNameForSave_IfIsEmpty() {
+    private void saveAction2_prepareCompanyName_IfIsEmpty() {
         if (company.getName() == null || company.getName().trim().equals(""))
             company.setName(companyNameTextField.getPromptText());
     }
 
-    private void saveTextToFile(String content,
-                                File file) {
+    private void saveAction3_SaveTextToFile(String content,
+                                            File file) {
         try {
             PrintWriter writer;
             writer = new PrintWriter(file);
@@ -381,6 +385,17 @@ public class PersonnelController {
         } catch (IOException ex) {
             errorMessageDialog(ex,"Your try to write "+ERROR_IOExceptionMESSAGE);
         }
+    }
+
+    //Working methods
+
+    private void setCompanyName(String newName) {
+        companyNameTextField.setText(newName);
+        renameCompany();
+    }
+
+    private void sort(String value) {
+        company.sort(getSortPersonType_BySortText(value), 1);
     }
 
     private ObservableList<String> getSortByChoiceBoxList() {
@@ -396,23 +411,28 @@ public class PersonnelController {
     private ObservableList<String> getWorkersType_Sort_ChoiceBoxList() {
         return FXCollections
                 .observableArrayList(
-                        WorkersType.ACTUAL_WORKER.toString(),
+                        WorkersType.ACTUAL.toString(),
                         WorkersType.ACTUAL_AND_REMOVED.toString(),
-                        WorkersType.REMOVED_WORKER.toString());
+                        WorkersType.REMOVED.toString());
     }
 
     private ObservableList<String> getWorkersTypeList() {
         return FXCollections
                 .observableArrayList(
-                        WorkersType.ACTUAL_WORKER.toString(),
-                        WorkersType.REMOVED_WORKER.toString());
+                        WorkersType.ACTUAL.toString(),
+                        WorkersType.REMOVED.toString());
     }
 
     private int getEncryptMove_Number() {
         int encryptedMovementNumber_FromTextField;
         if (!is_CorrectNumeric(encryptMoveField.getText())) {
-            encryptedMovementNumber_FromTextField = 0;
+            encryptedMovementNumber_FromTextField = DEFAULT_ENCRYPT_LEVEL;
         } else encryptedMovementNumber_FromTextField = Integer.parseInt(encryptMoveField.getText());
+        if (encryptedMovementNumber_FromTextField < DEFAULT_ENCRYPT_LEVEL) {
+            encryptMoveField.setText(String.valueOf(DEFAULT_ENCRYPT_LEVEL));
+            encryptedMovementNumber_FromTextField = DEFAULT_ENCRYPT_LEVEL;
+            alertMessageDialog("Insufficient encrypt level", "It was automatically set to Default value: " + DEFAULT_ENCRYPT_LEVEL);
+        }
         return encryptedMovementNumber_FromTextField;
     }
 
@@ -445,22 +465,22 @@ public class PersonnelController {
 
     private WorkersType returnWorkersType(String value) {
         switch (value) {
-            case "ACTUAL_WORKER":
-                return WorkersType.ACTUAL_WORKER;
+            case "ACTUAL":
+                return WorkersType.ACTUAL;
             case "ACTUAL_AND_REMOVED":
                 return WorkersType.ACTUAL_AND_REMOVED;
-            case "REMOVED_WORKER":
-                return WorkersType.REMOVED_WORKER;
+            case "REMOVED":
+                return WorkersType.REMOVED;
             default:
                 return null;
         }
     }
 
     private WorkersType workerType(String value) {
-        if ("REMOVED_WORKER".equals(value)) {
-            return WorkersType.REMOVED_WORKER;
-        } else if ("ACTUAL_WORKER".equals(value)) {
-            return WorkersType.ACTUAL_WORKER;
+        if ("REMOVED".equals(value)) {
+            return WorkersType.REMOVED;
+        } else if ("ACTUAL".equals(value)) {
+            return WorkersType.ACTUAL;
         } else return null;
     }
 
@@ -476,6 +496,30 @@ public class PersonnelController {
         }
         return true;
     }
+
+    private void clearAllTextFields() {
+        ageTextField.clear();
+        nameTextField.clear();
+        surnameTextField.clear();
+        workersIdTextField.clear();
+        positionTextField.clear();
+        companyNameTextField.clear();
+    }
+
+
+    private void startMessage() {
+        message("New company " + companyNameTextField.getText() + "has been set with " + getNumberOfWorkers() + " worker fields. Session start: " + startTime);
+    }
+
+    private void message(String message) {
+        LocalTime logTime = new LocalTime();
+        LocalDate logDate = new LocalDate();
+        message += " " + logTime + " " + logDate + CHANGE_LOG_SEPARATOR;
+        labelBottomInformation.setText(message);
+        changeLog += message;
+    }
+
+    // Message dialogs
 
     private void alertMessageDialog(String message,
                                     String content) {
@@ -528,21 +572,25 @@ public class PersonnelController {
         alert.showAndWait();
     }
 
-    private void clearAllTextFields(){
-        ageTextField.clear();
-        nameTextField.clear();
-        surnameTextField.clear();
-        workersIdTextField.clear();
-        positionTextField.clear();
-        companyNameTextField.clear();
-    }
+    private void changeLogLabel() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Change log dialog.");
+        alert.setHeaderText("Current session changes log. ");
+        alert.setGraphic(null);
 
-    private void message(String message){
-        LocalTime logTime = new LocalTime();
-        LocalDate logDate = new LocalDate();
-        message += " "+logTime+" "+logDate;
-        labelBottomInformation.setText(message);
-        changeLog += "message:"+message;
+        TextArea textArea = new TextArea(changeLog.replace(CHANGE_LOG_SEPARATOR, "\n"));
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+        GridPane.setVgrow(textArea, Priority.ALWAYS);
+        GridPane.setHgrow(textArea, Priority.ALWAYS);
+        GridPane expContent = new GridPane();
+        expContent.setMaxWidth(Double.MAX_VALUE);
+        expContent.add(textArea, 0, 1);
+
+        alert.getDialogPane().setExpandableContent(expContent);
+        alert.showAndWait();
     }
 
 }

@@ -63,6 +63,7 @@ public class Encrypting {
         while (counter < encryptMove) {
             encryptingChar++;
             if (encryptingChar >= 123) encryptingChar = 65;
+            if (encryptingChar >= 91 && encryptingChar <= 96) encryptingChar = 97;
             counter++;
         }
         return encryptingChar;
@@ -74,6 +75,7 @@ public class Encrypting {
         while (counter < encryptMove) {
             encryptingChar--;
             if (encryptingChar <= 64) encryptingChar = 122;
+            if (encryptingChar >= 91 && encryptingChar <= 96) encryptingChar = 90;
             counter++;
         }
         return encryptingChar;

@@ -6,7 +6,7 @@
 package personnelInfo.mechanics.enums;
 
 public enum WorkersType {
-    ACTUAL_WORKER,
+    ACTUAL,
     ACTUAL_AND_REMOVED,
-    REMOVED_WORKER
+    REMOVED
 }
