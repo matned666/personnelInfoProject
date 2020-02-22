@@ -23,7 +23,7 @@ import org.joda.time.LocalTime;
 import personnelInfo.mechanics.Company;
 import personnelInfo.mechanics.Encrypting;
 import personnelInfo.mechanics.Person;
-import personnelInfo.mechanics.StringToInt;
+import personnelInfo.mechanics.converters.StringToInt;
 import personnelInfo.mechanics.enums.SortPersonType;
 import personnelInfo.mechanics.enums.SortType;
 import personnelInfo.mechanics.enums.WorkersType;
@@ -108,7 +108,7 @@ public class PersonnelController {
     @FXML
     private void confirm_ButtonAction() {
         if (company != null && actualPerson != null) {
-            actualPerson.setAGE(convert.i(ageTextField.getText()));
+            actualPerson.setAGE(convert.integer(ageTextField.getText()));
             actualPerson.setNAME(nameTextField.getText());
             actualPerson.setSURNAME(surnameTextField.getText());
             actualPerson.setPosition(positionTextField.getText());
@@ -141,7 +141,7 @@ public class PersonnelController {
     private void addWorker_ButtonAction() {
         if (company == null) makeNewCompany_ButtonAction();
         company.addWorker();
-        numberOfWorkersTextField.setText(String.valueOf(company.getListOfWorkers().size()));
+        numberOfWorkersTextField.setText(convert.string(company.getListOfWorkers().size()));
         refreshWorkerButtons();
         message("New empty worker field added");
     }
@@ -212,7 +212,7 @@ public class PersonnelController {
 
     @FXML
     public void encryptOK_ButtonAction() {
-        encryptMoveField.setText(String.valueOf(getEncryptMove_Number()));
+        encryptMoveField.setText(convert.string(getEncryptMove_Number()));
         message("Encrypt level set.");
     }
 
@@ -284,9 +284,9 @@ public class PersonnelController {
     private void setPersonDataTextFields(int idCounter) {
         nameTextField.setText(company.getListOfWorkers().get(idCounter).getNAME());
         surnameTextField.setText(company.getListOfWorkers().get(idCounter).getSURNAME());
-        ageTextField.setText(String.valueOf(company.getListOfWorkers().get(idCounter).getAGE()));
+        ageTextField.setText(convert.string(company.getListOfWorkers().get(idCounter).getAGE()));
         positionTextField.setText(company.getListOfWorkers().get(idCounter).getPosition());
-        workersIdTextField.setText(String.valueOf(company.getListOfWorkers().get(idCounter).getID()));
+        workersIdTextField.setText(convert.string(company.getListOfWorkers().get(idCounter).getID()));
         workerStatusChoiceBox.setValue(company.getListOfWorkers().get(idCounter).getWorkerType().toString());
     }
 
@@ -347,7 +347,7 @@ public class PersonnelController {
         for (int i = 0; i < company.getListOfWorkers().size(); i++) {
             company.getListOfWorkers().get(i).setNAME(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[1], getEncryptMove_Number()));
             company.getListOfWorkers().get(i).setSURNAME(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[2], getEncryptMove_Number()));
-            company.getListOfWorkers().get(i).setAGE(convert.i(listOfElements_LoadedFromFile.get(i + 3)[3].trim()));
+            company.getListOfWorkers().get(i).setAGE(convert.integer(listOfElements_LoadedFromFile.get(i + 3)[3].trim()));
             company.getListOfWorkers().get(i).setPosition(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[4], getEncryptMove_Number()));
             company.getListOfWorkers().get(i).setWorkerType(returnWorkersType(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[5], getEncryptMove_Number())));
         }
@@ -355,7 +355,7 @@ public class PersonnelController {
 
     private void loadAction5_LoadChangeLog(List<String[]> listOfElements_LoadedFromFile) {
         if (listOfElements_LoadedFromFile.size() > 0)
-            changeLog = Encrypting.decrypt(listOfElements_LoadedFromFile.get(listOfElements_LoadedFromFile.size() - 1)[0], convert.i(encryptMoveField.getText()));
+            changeLog = Encrypting.decrypt(listOfElements_LoadedFromFile.get(listOfElements_LoadedFromFile.size() - 1)[0], convert.integer(encryptMoveField.getText()));
     }
 
     // save to file action
@@ -431,9 +431,9 @@ public class PersonnelController {
         int encryptedMovementNumber_FromTextField;
         if (!is_CorrectNumeric(encryptMoveField.getText())) {
             encryptedMovementNumber_FromTextField = DEFAULT_ENCRYPT_LEVEL;
-        } else encryptedMovementNumber_FromTextField = convert.i(encryptMoveField.getText());
+        } else encryptedMovementNumber_FromTextField = convert.integer(encryptMoveField.getText());
         if (encryptedMovementNumber_FromTextField < DEFAULT_ENCRYPT_LEVEL) {
-            encryptMoveField.setText(String.valueOf(DEFAULT_ENCRYPT_LEVEL));
+            encryptMoveField.setText(convert.string(DEFAULT_ENCRYPT_LEVEL));
             encryptedMovementNumber_FromTextField = DEFAULT_ENCRYPT_LEVEL;
             alertMessageDialog("Insufficient encrypt level", "It was automatically set to Default value: " + DEFAULT_ENCRYPT_LEVEL);
         }
@@ -444,7 +444,7 @@ public class PersonnelController {
         int numberOfWorkers_FromTextField;
         if (!is_CorrectNumeric(numberOfWorkersTextField.getText())) {
             numberOfWorkers_FromTextField = 0;
-        } else numberOfWorkers_FromTextField = convert.i(numberOfWorkersTextField.getText());
+        } else numberOfWorkers_FromTextField = convert.integer(numberOfWorkersTextField.getText());
         return numberOfWorkers_FromTextField;
     }
 
@@ -493,7 +493,7 @@ public class PersonnelController {
             return false;
         }
         try {
-            convert.i(textFieldContent);
+            convert.integer(textFieldContent);
         } catch (NumberFormatException nfe) {
             alertMessageDialog(WARNING_WrongNumberMESSAGE, WARNING_WrongNumberINFO);
             return false;
@@ -539,7 +539,7 @@ public class PersonnelController {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Exception Dialog");
         alert.setHeaderText(message);
-        alert.setContentText(String.valueOf(ex.getCause()));
+        alert.setContentText(convert.throwable(ex.getCause()));
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         ex.printStackTrace(pw);

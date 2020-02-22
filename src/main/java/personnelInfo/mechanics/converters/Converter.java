@@ -3,14 +3,10 @@
  * As of January 2020, all rights in any software published by MRN-Design (brand owned by Manufacture-MRN sp. z o.o.) & Mateusz Niedbał will remain with the author. Contact the author with any permission requests.
  */
 
-package personnelInfo.mechanics;
+package personnelInfo.mechanics.converters;
 
-public class StringToInt implements Converter<String, Integer> {
+public interface Converter<Input, Output> {
+    int integer(Input input);
 
-    public StringToInt() {
-    }
-
-    public int i(String s) {
-        return Integer.parseInt(s);
-    }
+    String string(Output output);
 }
