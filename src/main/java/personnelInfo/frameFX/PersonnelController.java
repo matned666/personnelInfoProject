@@ -5,7 +5,6 @@
 
 package personnelInfo.frameFX;
 
-
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -92,6 +91,7 @@ public class PersonnelController {
     private Converting convert;
 
     //Constructor
+    @org.jetbrains.annotations.Contract(pure = true)
     public PersonnelController() {
 
     }
@@ -166,13 +166,18 @@ public class PersonnelController {
 
     @FXML
     private void searchWorkers_ButtonAction() {
-        try {
-            sort(sortByChoiceBox.getValue());
-            message("Successful sort by "+sortByChoiceBox.getValue());
-            refreshWorkerButtons();
-        } catch (Exception ex) {
-            System.out.println("error");
-            message("Unsuccessful sort. Error message.");
+        if (company != null) {
+            if (company.getListOfWorkers().size() <= 0)
+                message("Unsuccessful sort. Nothing to sort yet.");
+            else if (company.getListOfWorkers().size() == 1)
+                message("Successful sort by " + sortByChoiceBox.getValue() + " of a single element (nothing has actually changed)");
+            else {
+                sort(sortByChoiceBox.getValue());
+                message("Successful sort by " + sortByChoiceBox.getValue());
+                refreshWorkerButtons();
+            }
+        } else {
+            alertMessageDialog("Sort impossible", "Company haven't been set.");
         }
     }
 
@@ -229,6 +234,7 @@ public class PersonnelController {
         }
     }
 
+    @FXML
     public void showChangeLogAction() {
         changeLogLabel();
     }
