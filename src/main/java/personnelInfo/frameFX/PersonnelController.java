@@ -23,7 +23,7 @@ import org.joda.time.LocalTime;
 import personnelInfo.mechanics.Company;
 import personnelInfo.mechanics.Encrypting;
 import personnelInfo.mechanics.Person;
-import personnelInfo.mechanics.converters.StringToInt;
+import personnelInfo.mechanics.converters.Converting;
 import personnelInfo.mechanics.enums.SortPersonType;
 import personnelInfo.mechanics.enums.SortType;
 import personnelInfo.mechanics.enums.WorkersType;
@@ -36,6 +36,7 @@ import java.util.Scanner;
 public class PersonnelController {
 
     private final static String CHANGE_LOG_SEPARATOR = " <<< message";
+
     private final static int DEFAULT_ENCRYPT_LEVEL = 3;
     private final static String WARNING_CompanyNULLMessage = "Company wasn't made yet!!";
     private final static String WARNING_CompanyNULLInformation = "It shouldn't have happen. Try to make a new company.";
@@ -88,7 +89,7 @@ public class PersonnelController {
     private Company company;
     private Person actualPerson;
     private Button actualWorkerButton;
-    private StringToInt convert;
+    private Converting convert;
 
     //Constructor
     public PersonnelController() {
@@ -98,7 +99,7 @@ public class PersonnelController {
     //FXML methods section
     @FXML
     private void initialize() {
-        convert = new StringToInt();
+        convert = new Converting();
         changeLog = "";
         initializeChoiceBoxes();
         makeNewCompany_ButtonAction();

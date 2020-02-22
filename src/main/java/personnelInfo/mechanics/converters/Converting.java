@@ -5,9 +5,9 @@
 
 package personnelInfo.mechanics.converters;
 
-public class StringToInt implements Converter<String, Integer> {
+public class Converting implements Converter<String, Integer> {
 
-    public StringToInt() {
+    public Converting() {
     }
 
     public int integer(String s) {
