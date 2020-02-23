@@ -9,7 +9,7 @@ package personnelInfo.frameFX;
 import javafx.scene.control.Button;
 import personnelInfo.mechanics.Person;
 
-class WorkerField {
+public class WorkerField {
 
     private Button button;
     private Person person;

@@ -6,12 +6,8 @@
 package personnelInfo.frameFX;
 
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
@@ -24,7 +20,6 @@ import personnelInfo.mechanics.Encrypting;
 import personnelInfo.mechanics.Person;
 import personnelInfo.mechanics.converters.Converting;
 import personnelInfo.mechanics.enums.SortPersonType;
-import personnelInfo.mechanics.enums.SortType;
 import personnelInfo.mechanics.enums.WorkersType;
 
 import java.io.*;
@@ -34,18 +29,9 @@ import java.util.Scanner;
 
 public class PersonnelController {
 
+    private final static int DEFAULT_ENCRYPT_LEVEL = 3;
     private final static String CHANGE_LOG_SEPARATOR = " <<< message";
 
-    private final static int DEFAULT_ENCRYPT_LEVEL = 3;
-    private final static String WARNING_CompanyNULLMessage = "Company wasn't made yet!!";
-    private final static String WARNING_CompanyNULLInformation = "It shouldn't have happen. Try to make a new company.";
-    private final static String WARNING_NoPersonSelectedMessage = "No worker selected!!";
-    private final static String WARNING_NoPersonSelectedInformation = "Select a worker";
-    private final static String INFORMATION_Message = "Made by Mateusz Niedbał";
-    private final static String INFORMATION_Information = "All rights reserved :-)";
-    private final static String WARNING_WrongNumberMESSAGE = "Wrong number format!";
-    private final static String WARNING_WrongNumberINFO = "Try it with numbers...";
-    private final static String ERROR_IOExceptionMESSAGE = " file has failed. Check it out!";
 
     //FXML fields
     @FXML
@@ -91,7 +77,6 @@ public class PersonnelController {
     private Converting convert;
 
     //Constructor
-    @org.jetbrains.annotations.Contract(pure = true)
     public PersonnelController() {
 
     }
@@ -101,7 +86,7 @@ public class PersonnelController {
     private void initialize() {
         convert = new Converting();
         changeLog = "";
-        initializeChoiceBoxes();
+        new BoxListCollectionsInitialize(sortByChoiceBox,workersTypeShowChoiceBox,workerStatusChoiceBox);
         makeNewCompany_ButtonAction();
         message("Welcome");
     }
@@ -109,15 +94,10 @@ public class PersonnelController {
     @FXML
     private void confirm_ButtonAction() {
         if (company != null && actualPerson != null) {
-            actualPerson.setAGE(convert.integer(ageTextField.getText()));
-            actualPerson.setNAME(nameTextField.getText());
-            actualPerson.setSURNAME(surnameTextField.getText());
-            actualPerson.setPosition(positionTextField.getText());
-            actualPerson.setWorkerType(workerType(workerStatusChoiceBox.getValue().trim()));
-            actualWorkerButton.setText(actualPerson.print());
+            setActualPersonData();
             message("Personal data changed");
         } else {
-            alertMessageDialog(WARNING_NoPersonSelectedMessage, WARNING_NoPersonSelectedInformation + ", type his data again and accept.");
+            Messages.alertMessageDialog(Messages.getWARNING_NoPersonSelectedMessage(), Messages.getWARNING_NoPersonSelectedInformation() + ", type his data again and accept.");
             message("Personal data NOT changed");
         }
     }
@@ -151,10 +131,10 @@ public class PersonnelController {
     private void removeWorker_ButtonAction() {
         if (company == null) {
             makeNewCompany_ButtonAction();
-            alertMessageDialog(WARNING_CompanyNULLMessage, WARNING_CompanyNULLInformation);
+            Messages.alertMessageDialog(Messages.getWARNING_CompanyNULLMessage(), Messages.getWARNING_CompanyNULLInformation());
             message("Unsuccessful worker removal. No company was selected.");
         } else if (actualPerson == null || company.getListOfWorkers().size() <= 0) {
-            alertMessageDialog(WARNING_NoPersonSelectedMessage, WARNING_NoPersonSelectedInformation + " and try to remove him again.");
+            Messages.alertMessageDialog(Messages.getWARNING_NoPersonSelectedMessage(), Messages.getWARNING_NoPersonSelectedInformation() + " and try to remove him again.");
             message("Unsuccessful worker removal. No worker was selected.");
         } else {
             company.removeWorker(actualPerson.getID());
@@ -177,7 +157,7 @@ public class PersonnelController {
                 refreshWorkerButtons();
             }
         } else {
-            alertMessageDialog("Sort impossible", "Company haven't been set.");
+            Messages.alertMessageDialog("Sort impossible", "Company haven't been set.");
         }
     }
 
@@ -206,14 +186,14 @@ public class PersonnelController {
             saveAction1_PrepareData_ForSave();
             message("Company saved.");
         } else {
-            alertMessageDialog(WARNING_CompanyNULLMessage, WARNING_CompanyNULLInformation);
+            Messages.alertMessageDialog(Messages.getWARNING_CompanyNULLMessage(), Messages.getWARNING_CompanyNULLInformation());
             message("Company save ERROR!!");
         }
     }
 
     @FXML
     private void information_MenuItemAction() {
-        informationDialog();
+        Messages.informationDialog();
     }
 
     @FXML
@@ -229,25 +209,17 @@ public class PersonnelController {
             company.setName(companyNameTextField.getText());
             message("Company name set.");
         } else {
-            alertMessageDialog(WARNING_CompanyNULLMessage, WARNING_CompanyNULLInformation);
+            Messages.alertMessageDialog(Messages.getWARNING_CompanyNULLMessage(), Messages.getWARNING_CompanyNULLInformation());
             message("Company name NOT set. NO company selected.");
         }
     }
 
     @FXML
     public void showChangeLogAction() {
-        changeLogLabel();
+        Messages.changeLogLabel(changeLog,CHANGE_LOG_SEPARATOR);
     }
 
     // rest of methods
-    private void initializeChoiceBoxes() {
-        sortByChoiceBox.setValue(SortType.SORT_BY_ID.toString());
-        sortByChoiceBox.setItems(getSortByChoiceBoxList());
-        workersTypeShowChoiceBox.setValue(WorkersType.ACTUAL_AND_REMOVED.toString());
-        workersTypeShowChoiceBox.setItems(getWorkersType_Sort_ChoiceBoxList());
-        workerStatusChoiceBox.setValue(WorkersType.ACTUAL.toString());
-        workerStatusChoiceBox.setItems(getWorkersTypeList());
-    }
 
     private void refreshWorkerButtons() {
         if (company != null) {
@@ -261,9 +233,8 @@ public class PersonnelController {
             }
             companyNameTextField.setText(company.getName());
         } else {
-            alertMessageDialog(WARNING_CompanyNULLMessage, WARNING_CompanyNULLInformation);
+            Messages.alertMessageDialog(Messages.getWARNING_CompanyNULLMessage(), Messages.getWARNING_CompanyNULLInformation());
         }
-
     }
 
     private void setNewButtonWithData(int actualButton, int idCounter) {
@@ -283,6 +254,15 @@ public class PersonnelController {
                 || returnWorkersType(workersTypeShowChoiceBox.getValue()) == WorkersType.ACTUAL_AND_REMOVED);
     }
 
+    private void setActualPersonData() {
+        actualPerson.setAGE(convert.integer(ageTextField.getText()));
+        actualPerson.setNAME(nameTextField.getText());
+        actualPerson.setSURNAME(surnameTextField.getText());
+        actualPerson.setPosition(positionTextField.getText());
+        actualPerson.setWorkerType(workerType(workerStatusChoiceBox.getValue().trim()));
+        actualWorkerButton.setText(actualPerson.print());
+    }
+
     private void clearVBoxWithWorkersList() {
         vBoxWithWorkers.getChildren().clear();
         buttonsWithWorkers = new LinkedList<>();
@@ -295,6 +275,15 @@ public class PersonnelController {
         positionTextField.setText(company.getListOfWorkers().get(idCounter).getPosition());
         workersIdTextField.setText(convert.string(company.getListOfWorkers().get(idCounter).getID()));
         workerStatusChoiceBox.setValue(company.getListOfWorkers().get(idCounter).getWorkerType().toString());
+    }
+
+    private void clearAllTextFields() {
+        ageTextField.clear();
+        nameTextField.clear();
+        surnameTextField.clear();
+        workersIdTextField.clear();
+        positionTextField.clear();
+        companyNameTextField.clear();
     }
 
     private void personButtonFactoring(Button button,
@@ -335,8 +324,9 @@ public class PersonnelController {
                 changeLog = "";
                 message("Company loaded.");
                 loadAction3_SetCompanyMakingTextFields(listOfElements_LoadedFromFile);
+                scanner.close();
             } catch (FileNotFoundException ex) {
-                errorMessageDialog(ex,"Your try to write "+ERROR_IOExceptionMESSAGE);
+                Messages.errorMessageDialog(ex,"Your try to write "+Messages.getERROR_IOExceptionMESSAGE(),convert);
                 message("Error while loading");
             }
         }
@@ -394,7 +384,7 @@ public class PersonnelController {
             writer.println(content);
             writer.close();
         } catch (IOException ex) {
-            errorMessageDialog(ex,"Your try to write "+ERROR_IOExceptionMESSAGE);
+            Messages.errorMessageDialog(ex,("Your try to write "+Messages.getERROR_IOExceptionMESSAGE()),convert);
         }
     }
 
@@ -409,31 +399,6 @@ public class PersonnelController {
         company.sort(getSortPersonType_BySortText(value), 1);
     }
 
-    private ObservableList<String> getSortByChoiceBoxList() {
-        return FXCollections
-                .observableArrayList(
-                        SortType.SORT_BY_ID.toString(), SortType.SORT_BY_ID_REV.toString(),
-                        SortType.SORT_BY_NAME.toString(), SortType.SORT_BY_NAME_REV.toString(),
-                        SortType.SORT_BY_SURNAME.toString(), SortType.SORT_BY_SURNAME_REV.toString(),
-                        SortType.SORT_BY_AGE.toString(), SortType.SORT_BY_AGE_REV.toString(),
-                        SortType.SORT_BY_POSITION.toString(), SortType.SORT_BY_POSITION_REV.toString());
-    }
-
-    private ObservableList<String> getWorkersType_Sort_ChoiceBoxList() {
-        return FXCollections
-                .observableArrayList(
-                        WorkersType.ACTUAL.toString(),
-                        WorkersType.ACTUAL_AND_REMOVED.toString(),
-                        WorkersType.REMOVED.toString());
-    }
-
-    private ObservableList<String> getWorkersTypeList() {
-        return FXCollections
-                .observableArrayList(
-                        WorkersType.ACTUAL.toString(),
-                        WorkersType.REMOVED.toString());
-    }
-
     private int getEncryptMove_Number() {
         int encryptedMovementNumber_FromTextField;
         if (!is_CorrectNumeric(encryptMoveField.getText())) {
@@ -442,7 +407,7 @@ public class PersonnelController {
         if (encryptedMovementNumber_FromTextField < DEFAULT_ENCRYPT_LEVEL) {
             encryptMoveField.setText(convert.string(DEFAULT_ENCRYPT_LEVEL));
             encryptedMovementNumber_FromTextField = DEFAULT_ENCRYPT_LEVEL;
-            alertMessageDialog("Insufficient encrypt level", "It was automatically set to Default value: " + DEFAULT_ENCRYPT_LEVEL);
+            Messages.alertMessageDialog("Insufficient encrypt level", "It was automatically set to Default value: " + DEFAULT_ENCRYPT_LEVEL);
         }
         return encryptedMovementNumber_FromTextField;
     }
@@ -457,42 +422,15 @@ public class PersonnelController {
 
 
     private SortPersonType getSortPersonType_BySortText(String value) {
-        value = value.replace("_REV", "");
-        switch (value) {
-            case "SORT_BY_ID":
-                return SortPersonType.ID;
-            case "SORT_BY_NAME":
-                return SortPersonType.NAME;
-            case "SORT_BY_SURNAME":
-                return SortPersonType.SURNAME;
-            case "SORT_BY_AGE":
-                return SortPersonType.AGE;
-            case "SORT_BY_POSITION":
-                return SortPersonType.POSITION;
-            default:
-                return null;
-        }
+      return  new SortingType().getSortPersonType_BySortText(value);
     }
 
     private WorkersType returnWorkersType(String value) {
-        switch (value) {
-            case "ACTUAL":
-                return WorkersType.ACTUAL;
-            case "ACTUAL_AND_REMOVED":
-                return WorkersType.ACTUAL_AND_REMOVED;
-            case "REMOVED":
-                return WorkersType.REMOVED;
-            default:
-                return null;
-        }
+   return new SortingType().returnWorkersType(value);
     }
 
     private WorkersType workerType(String value) {
-        if ("REMOVED".equals(value)) {
-            return WorkersType.REMOVED;
-        } else if ("ACTUAL".equals(value)) {
-            return WorkersType.ACTUAL;
-        } else return null;
+     return new SortingType().workerType(value);
     }
 
     private boolean is_CorrectNumeric(String textFieldContent) {
@@ -502,20 +440,12 @@ public class PersonnelController {
         try {
             convert.integer(textFieldContent);
         } catch (NumberFormatException nfe) {
-            alertMessageDialog(WARNING_WrongNumberMESSAGE, WARNING_WrongNumberINFO);
+            Messages.alertMessageDialog(Messages.getWARNING_WrongNumberMESSAGE(), Messages.getWARNING_WrongNumberINFO());
             return false;
         }
         return true;
     }
 
-    private void clearAllTextFields() {
-        ageTextField.clear();
-        nameTextField.clear();
-        surnameTextField.clear();
-        workersIdTextField.clear();
-        positionTextField.clear();
-        companyNameTextField.clear();
-    }
 
 
     private void startMessage() {
@@ -530,78 +460,5 @@ public class PersonnelController {
         changeLog += message;
     }
 
-    // Message dialogs
-
-    private void alertMessageDialog(String message,
-                                    String content) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("WARNING");
-        alert.setHeaderText(message);
-        alert.setContentText(content);
-
-        alert.showAndWait();
-    }
-
-    private void errorMessageDialog(Throwable ex, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Exception Dialog");
-        alert.setHeaderText(message);
-        alert.setContentText(convert.throwable(ex.getCause()));
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        ex.printStackTrace(pw);
-        String exceptionText = sw.toString();
-        alert.getDialogPane().setExpandableContent(expContent(exceptionText));
-        alert.showAndWait();
-    }
-
-    private GridPane expContent(String exceptionText) {
-        GridPane.setVgrow(textArea_StackTraceInfo(exceptionText), Priority.ALWAYS);
-        GridPane.setHgrow(textArea_StackTraceInfo(exceptionText), Priority.ALWAYS);
-        GridPane expContent = new GridPane();
-        expContent.setMaxWidth(Double.MAX_VALUE);
-        Label label = new Label("The exception stacktrace was:");
-        expContent.add(label, 0, 0);
-        expContent.add(textArea_StackTraceInfo(exceptionText), 0, 1);
-        return expContent;
-    }
-
-    private TextArea textArea_StackTraceInfo(String exceptionText) {
-        TextArea textArea = new TextArea(exceptionText);
-        textArea.setEditable(false);
-        textArea.setWrapText(true);
-        textArea.setMaxWidth(Double.MAX_VALUE);
-        textArea.setMaxHeight(Double.MAX_VALUE);
-        return textArea;
-    }
-
-    private void informationDialog() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Information Dialog");
-        alert.setHeaderText(PersonnelController.INFORMATION_Message);
-        alert.setContentText(PersonnelController.INFORMATION_Information);
-        alert.showAndWait();
-    }
-
-    private void changeLogLabel() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Change log dialog.");
-        alert.setHeaderText("Current session changes log. ");
-        alert.setGraphic(null);
-
-        TextArea textArea = new TextArea(changeLog.replace(CHANGE_LOG_SEPARATOR, "\n"));
-        textArea.setEditable(false);
-        textArea.setWrapText(true);
-        textArea.setMaxWidth(Double.MAX_VALUE);
-        textArea.setMaxHeight(Double.MAX_VALUE);
-        GridPane.setVgrow(textArea, Priority.ALWAYS);
-        GridPane.setHgrow(textArea, Priority.ALWAYS);
-        GridPane expContent = new GridPane();
-        expContent.setMaxWidth(Double.MAX_VALUE);
-        expContent.add(textArea, 0, 1);
-
-        alert.getDialogPane().setExpandableContent(expContent);
-        alert.showAndWait();
-    }
 
 }

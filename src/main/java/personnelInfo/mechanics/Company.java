@@ -44,7 +44,7 @@ public class Company {
     }
 
     private void sortInner(List<Person> list, SortPersonType sortPersonByType, int reversedSortSwitch_Minus1ToReverse_Plus1ToNormal) {
-        list.sort(new Comparator<>() {
+        list.sort(new Comparator<Person>() {
 
             @Override
             public int compare(Person o1, Person o2) {
