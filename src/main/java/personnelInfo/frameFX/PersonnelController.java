@@ -91,7 +91,6 @@ public class PersonnelController {
     private Converting convert;
 
     //Constructor
-    @org.jetbrains.annotations.Contract(pure = true)
     public PersonnelController() {
 
     }
