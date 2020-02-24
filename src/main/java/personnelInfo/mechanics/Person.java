@@ -5,7 +5,7 @@
 
 package personnelInfo.mechanics;
 
-import personnelInfo.mechanics.enums.WorkersType;
+import personnelInfo.mechanics.enums.PersonType;
 
 public class Person {
 
@@ -15,7 +15,7 @@ public class Person {
 
     private String position;
     private int ID;
-    private WorkersType workerType;
+    private PersonType workerType;
 
     public String getNAME() {
         return NAME;
@@ -37,7 +37,7 @@ public class Person {
         return position;
     }
 
-    public WorkersType getWorkerType() {
+    public PersonType getWorkerType() {
         return workerType;
     }
 
@@ -57,7 +57,7 @@ public class Person {
         this.position = position;
     }
 
-    public void setWorkerType(WorkersType workerType) {
+    public void setWorkerType(PersonType workerType) {
         this.workerType = workerType;
     }
 
@@ -68,7 +68,7 @@ public class Person {
         this.AGE = builder.AGE;
         this.position = builder.position;
         this.ID = builder.ID;
-        this.workerType = WorkersType.ACTUAL;
+        this.workerType = PersonType.ACTUAL;
     }
 
     public String print() {
