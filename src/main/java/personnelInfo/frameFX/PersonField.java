@@ -9,13 +9,15 @@ package personnelInfo.frameFX;
 import javafx.scene.control.Button;
 import personnelInfo.mechanics.Person;
 
-public class WorkerField {
+public class PersonField {
 
     private Button button;
     private Person person;
+    private int personFieldId;
 
-    WorkerField(Person person) {
-        button = new Button();
+    PersonField(Person person, int personFieldId) {
+        this.personFieldId = personFieldId;
+        this.button = new Button();
         this.person = person;
     }
 

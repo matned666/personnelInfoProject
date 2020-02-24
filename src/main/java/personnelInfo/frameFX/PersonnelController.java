@@ -20,7 +20,7 @@ import personnelInfo.mechanics.Encrypting;
 import personnelInfo.mechanics.Person;
 import personnelInfo.mechanics.converters.Converting;
 import personnelInfo.mechanics.enums.SortPersonType;
-import personnelInfo.mechanics.enums.WorkersType;
+import personnelInfo.mechanics.enums.PersonType;
 
 import java.io.*;
 import java.util.LinkedList;
@@ -31,7 +31,9 @@ public class PersonnelController {
 
     private final static int DEFAULT_ENCRYPT_LEVEL = 3;
     private final static String CHANGE_LOG_SEPARATOR = " <<< message";
+    private Encrypting code;
 
+    private static Converting convert = new Converting();
 
     //FXML fields
     @FXML
@@ -70,11 +72,11 @@ public class PersonnelController {
     //variables
     private DateTime startTime;
     private String changeLog;
-    private List<WorkerField> buttonsWithWorkers;
+    private List<PersonField> list_Company_PersonFields;
     private Company company;
     private Person actualPerson;
     private Button actualWorkerButton;
-    private Converting convert;
+
 
     //Constructor
     public PersonnelController() {
@@ -84,19 +86,21 @@ public class PersonnelController {
     //FXML methods section
     @FXML
     private void initialize() {
-        convert = new Converting();
+        code = new Encrypting();
         changeLog = "";
-        new BoxListCollectionsInitialize(sortByChoiceBox,workersTypeShowChoiceBox,workerStatusChoiceBox);
+        new BoxList_Collections_Initialize(sortByChoiceBox,workersTypeShowChoiceBox,workerStatusChoiceBox);
         makeNewCompany_ButtonAction();
         message("Welcome");
     }
 
     @FXML
     private void confirm_ButtonAction() {
-        if (company != null && actualPerson != null) {
+        if (company != null) {
             setActualPersonData();
             message("Personal data changed");
-        } else {
+        }else if( actualPerson != null){
+            System.out.println("lol");
+        }else {
             Messages.alertMessageDialog(Messages.getWARNING_NoPersonSelectedMessage(), Messages.getWARNING_NoPersonSelectedInformation() + ", type his data again and accept.");
             message("Personal data NOT changed");
         }
@@ -107,12 +111,13 @@ public class PersonnelController {
         changeLog = "";
         vBoxWithWorkers.getChildren().clear();
         clearAllTextFields();
-        company = new Company(companyNameTextField.getText(), getNumberOfWorkers());
-        buttonsWithWorkers = new LinkedList<>();
+        company = new Company(companyNameTextField.getText(), Mechanics.getNumberOfWorkers(numberOfWorkersTextField));
+        list_Company_PersonFields = new LinkedList<>();
         for (int i = 0; i < company.getListOfWorkers().size(); i++) {
-            buttonsWithWorkers.add(new WorkerField(company.getListOfWorkers().get(i)));
-            personButtonFactoring(buttonsWithWorkers.get(i).getButton(), i);
-            vBoxWithWorkers.getChildren().add(buttonsWithWorkers.get(i).getButton());
+            actualPerson = company.getListOfWorkers().get(i);
+            list_Company_PersonFields.add(new PersonField(actualPerson,actualPerson.getID()));
+            personButtonFactoring(list_Company_PersonFields.get(i).getButton(), i);
+            vBoxWithWorkers.getChildren().add(list_Company_PersonFields.get(i).getButton());
         }
         startTime = new DateTime();
         startMessage();
@@ -122,7 +127,7 @@ public class PersonnelController {
     private void addWorker_ButtonAction() {
         if (company == null) makeNewCompany_ButtonAction();
         company.addWorker();
-        numberOfWorkersTextField.setText(convert.string(company.getListOfWorkers().size()));
+        actualPerson = company.getListOfWorkers().get(company.getListOfWorkers().size()-1);
         refreshWorkerButtons();
         message("New empty worker field added");
     }
@@ -232,26 +237,29 @@ public class PersonnelController {
                 }
             }
             companyNameTextField.setText(company.getName());
+            numberOfWorkersTextField.setText(convert.string(company.getListOfWorkers().size()));
+
         } else {
             Messages.alertMessageDialog(Messages.getWARNING_CompanyNULLMessage(), Messages.getWARNING_CompanyNULLInformation());
         }
     }
 
     private void setNewButtonWithData(int actualButton, int idCounter) {
-        buttonsWithWorkers.add(new WorkerField(company.getListOfWorkers().get(idCounter)));
-        buttonsWithWorkers.get(actualButton).getButton().setPrefSize(430, 30);
-        buttonsWithWorkers.get(actualButton).getButton().setOnAction(eventHandler -> {
+        actualPerson = company.getListOfWorkers().get(idCounter);
+        list_Company_PersonFields.add(new PersonField(actualPerson,actualPerson.getID()));
+        list_Company_PersonFields.get(actualButton).getButton().setPrefSize(430, 30);
+        list_Company_PersonFields.get(actualButton).getButton().setOnAction(eventHandler -> {
             setPersonDataTextFields(actualButton);
-            actualPerson = buttonsWithWorkers.get(actualButton).getPerson();
-            actualWorkerButton = buttonsWithWorkers.get(actualButton).getButton();
+            actualPerson = list_Company_PersonFields.get(actualButton).getPerson();
+            actualWorkerButton = list_Company_PersonFields.get(actualButton).getButton();
         });
-        buttonsWithWorkers.get(actualButton).getButton().setText(company.getListOfWorkers().get(idCounter).print());
-        vBoxWithWorkers.getChildren().add(buttonsWithWorkers.get(actualButton).getButton());
+        list_Company_PersonFields.get(actualButton).getButton().setText(company.getListOfWorkers().get(idCounter).print());
+        vBoxWithWorkers.getChildren().add(list_Company_PersonFields.get(actualButton).getButton());
     }
 
     private boolean sortStatement_ForAllWorkers(int idCounter) {
         return (returnWorkersType(workersTypeShowChoiceBox.getValue()) == company.getListOfWorkers().get(idCounter).getWorkerType()
-                || returnWorkersType(workersTypeShowChoiceBox.getValue()) == WorkersType.ACTUAL_AND_REMOVED);
+                || returnWorkersType(workersTypeShowChoiceBox.getValue()) == PersonType.ACTUAL_AND_REMOVED);
     }
 
     private void setActualPersonData() {
@@ -265,7 +273,7 @@ public class PersonnelController {
 
     private void clearVBoxWithWorkersList() {
         vBoxWithWorkers.getChildren().clear();
-        buttonsWithWorkers = new LinkedList<>();
+        list_Company_PersonFields = new LinkedList<>();
     }
 
     private void setPersonDataTextFields(int idCounter) {
@@ -291,10 +299,10 @@ public class PersonnelController {
         button.setPrefSize(430, 30);
         button.setOnAction(eventHandler -> {
             setPersonDataTextFields(idCounter);
-            actualPerson = buttonsWithWorkers.get(idCounter).getPerson();
-            actualWorkerButton = buttonsWithWorkers.get(idCounter).getButton();
+            actualPerson = list_Company_PersonFields.get(idCounter).getPerson();
+            actualWorkerButton = list_Company_PersonFields.get(idCounter).getButton();
         });
-        buttonsWithWorkers.get(idCounter).getButton().setText(company.getListOfWorkers().get(idCounter).print());
+        list_Company_PersonFields.get(idCounter).getButton().setText(company.getListOfWorkers().get(idCounter).print());
         button.setWrapText(true);
     }
 
@@ -326,7 +334,7 @@ public class PersonnelController {
                 loadAction3_SetCompanyMakingTextFields(listOfElements_LoadedFromFile);
                 scanner.close();
             } catch (FileNotFoundException ex) {
-                Messages.errorMessageDialog(ex,"Your try to write "+Messages.getERROR_IOExceptionMESSAGE(),convert);
+                Messages.errorMessageDialog(ex,"Your try to write "+Messages.getERROR_IOExceptionMESSAGE());
                 message("Error while loading");
             }
         }
@@ -336,23 +344,24 @@ public class PersonnelController {
         encryptMoveField.setText(listOfElements_LoadedFromFile.get(0)[0]);
         numberOfWorkersTextField.setText(listOfElements_LoadedFromFile.get(2)[0].trim());
         makeNewCompany_ButtonAction();
-        setCompanyName(Encrypting.decrypt(listOfElements_LoadedFromFile.get(1)[0].trim(), getEncryptMove_Number()));
+        setCompanyName(code.decrypt(listOfElements_LoadedFromFile.get(1)[0].trim(), getEncryptMove_Number()));
         loadAction4_addWorkers_FromLoadedFile(listOfElements_LoadedFromFile);
     }
 
     private void loadAction4_addWorkers_FromLoadedFile(List<String[]> listOfElements_LoadedFromFile) {
         for (int i = 0; i < company.getListOfWorkers().size(); i++) {
-            company.getListOfWorkers().get(i).setNAME(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[1], getEncryptMove_Number()));
-            company.getListOfWorkers().get(i).setSURNAME(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[2], getEncryptMove_Number()));
+            company.getListOfWorkers().get(i).setNAME(code.decrypt(listOfElements_LoadedFromFile.get(i + 3)[1], getEncryptMove_Number()));
+            company.getListOfWorkers().get(i).setSURNAME(code.decrypt(listOfElements_LoadedFromFile.get(i + 3)[2], getEncryptMove_Number()));
             company.getListOfWorkers().get(i).setAGE(convert.integer(listOfElements_LoadedFromFile.get(i + 3)[3].trim()));
-            company.getListOfWorkers().get(i).setPosition(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[4], getEncryptMove_Number()));
-            company.getListOfWorkers().get(i).setWorkerType(returnWorkersType(Encrypting.decrypt(listOfElements_LoadedFromFile.get(i + 3)[5], getEncryptMove_Number())));
+            company.getListOfWorkers().get(i).setPosition(code.decrypt(listOfElements_LoadedFromFile.get(i + 3)[4], getEncryptMove_Number()));
+            company.getListOfWorkers().get(i).setWorkerType(returnWorkersType(code.decrypt(listOfElements_LoadedFromFile.get(i + 3)[5], getEncryptMove_Number())));
         }
     }
 
     private void loadAction5_LoadChangeLog(List<String[]> listOfElements_LoadedFromFile) {
         if (listOfElements_LoadedFromFile.size() > 0)
-            changeLog = Encrypting.decrypt(listOfElements_LoadedFromFile.get(listOfElements_LoadedFromFile.size() - 1)[0], convert.integer(encryptMoveField.getText()));
+            changeLog = code.decrypt(listOfElements_LoadedFromFile
+                            .get(listOfElements_LoadedFromFile.size() - 1)[0], convert.integer(encryptMoveField.getText()));
     }
 
     // save to file action
@@ -366,7 +375,7 @@ public class PersonnelController {
             saveAction2_prepareCompanyName_IfIsEmpty();
             changeLog += new DateTime() + CHANGE_LOG_SEPARATOR;
             if (file != null) {
-                saveAction3_SaveTextToFile(Encrypting.encrypt(encryptMoveField.getText() + ";\n" + company.toString() + changeLog, getEncryptMove_Number()), file);
+                saveAction3_SaveTextToFile(code.encrypt(encryptMoveField.getText() + ";\n" + company.toString() + changeLog, getEncryptMove_Number()), file);
             }
         }
     }
@@ -384,7 +393,7 @@ public class PersonnelController {
             writer.println(content);
             writer.close();
         } catch (IOException ex) {
-            Messages.errorMessageDialog(ex,("Your try to write "+Messages.getERROR_IOExceptionMESSAGE()),convert);
+            Messages.errorMessageDialog(ex,("Your try to write "+Messages.getERROR_IOExceptionMESSAGE()));
         }
     }
 
@@ -400,56 +409,30 @@ public class PersonnelController {
     }
 
     private int getEncryptMove_Number() {
-        int encryptedMovementNumber_FromTextField;
-        if (!is_CorrectNumeric(encryptMoveField.getText())) {
-            encryptedMovementNumber_FromTextField = DEFAULT_ENCRYPT_LEVEL;
-        } else encryptedMovementNumber_FromTextField = convert.integer(encryptMoveField.getText());
-        if (encryptedMovementNumber_FromTextField < DEFAULT_ENCRYPT_LEVEL) {
-            encryptMoveField.setText(convert.string(DEFAULT_ENCRYPT_LEVEL));
-            encryptedMovementNumber_FromTextField = DEFAULT_ENCRYPT_LEVEL;
-            Messages.alertMessageDialog("Insufficient encrypt level", "It was automatically set to Default value: " + DEFAULT_ENCRYPT_LEVEL);
-        }
-        return encryptedMovementNumber_FromTextField;
+        return new Mechanics()
+                .getEncryptMove_Number(DEFAULT_ENCRYPT_LEVEL,encryptMoveField);
     }
 
-    private int getNumberOfWorkers() {
-        int numberOfWorkers_FromTextField;
-        if (!is_CorrectNumeric(numberOfWorkersTextField.getText())) {
-            numberOfWorkers_FromTextField = 0;
-        } else numberOfWorkers_FromTextField = convert.integer(numberOfWorkersTextField.getText());
-        return numberOfWorkers_FromTextField;
+    private static SortPersonType getSortPersonType_BySortText(String value) {
+        return  new Mechanics().getSortPersonType_BySortText(value);
+    }
+
+    private static PersonType returnWorkersType(String value) {
+        return new Mechanics().returnWorkersType(value);
+    }
+
+    private static PersonType workerType(String value) {
+        return new Mechanics().workerType(value);
     }
 
 
-    private SortPersonType getSortPersonType_BySortText(String value) {
-      return  new SortingType().getSortPersonType_BySortText(value);
-    }
-
-    private WorkersType returnWorkersType(String value) {
-   return new SortingType().returnWorkersType(value);
-    }
-
-    private WorkersType workerType(String value) {
-     return new SortingType().workerType(value);
-    }
-
-    private boolean is_CorrectNumeric(String textFieldContent) {
-        if (textFieldContent == null) {
-            return false;
-        }
-        try {
-            convert.integer(textFieldContent);
-        } catch (NumberFormatException nfe) {
-            Messages.alertMessageDialog(Messages.getWARNING_WrongNumberMESSAGE(), Messages.getWARNING_WrongNumberINFO());
-            return false;
-        }
-        return true;
-    }
 
 
 
     private void startMessage() {
-        message("New company " + companyNameTextField.getText() + "has been set with " + getNumberOfWorkers() + " worker fields. Session start: " + startTime);
+        message("New company " + companyNameTextField.getText() + "has been set with "
+                + Mechanics.getNumberOfWorkers(numberOfWorkersTextField)
+                + " worker fields. Session start: " + startTime);
     }
 
     private void message(String message) {

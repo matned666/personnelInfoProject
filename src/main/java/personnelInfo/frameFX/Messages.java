@@ -10,8 +10,9 @@ import personnelInfo.mechanics.converters.Converting;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-public class Messages {
+class Messages {
 
+    private static Converting convert = new Converting();
 
     private final static String WARNING_CompanyNULLMessage = "Company wasn't made yet!!";
     private final static String WARNING_CompanyNULLInformation = "It shouldn't have happen. Try to make a new company.";
@@ -33,7 +34,7 @@ public class Messages {
         alert.showAndWait();
     }
 
-    static void errorMessageDialog(Throwable ex, String message, Converting convert) {
+    static void errorMessageDialog(Throwable ex, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Exception Dialog");
         alert.setHeaderText(message);
@@ -46,7 +47,7 @@ public class Messages {
         alert.showAndWait();
     }
 
-    static GridPane expContent(String exceptionText) {
+    private static GridPane expContent(String exceptionText) {
         GridPane.setVgrow(textArea_StackTraceInfo(exceptionText), Priority.ALWAYS);
         GridPane.setHgrow(textArea_StackTraceInfo(exceptionText), Priority.ALWAYS);
         GridPane expContent = new GridPane();
@@ -57,7 +58,7 @@ public class Messages {
         return expContent;
     }
 
-    static TextArea textArea_StackTraceInfo(String exceptionText) {
+    private static TextArea textArea_StackTraceInfo(String exceptionText) {
         TextArea textArea = new TextArea(exceptionText);
         textArea.setEditable(false);
         textArea.setWrapText(true);
@@ -106,12 +107,6 @@ public class Messages {
     }
      static String getWARNING_NoPersonSelectedInformation() {
         return WARNING_NoPersonSelectedInformation;
-    }
-     static String getINFORMATION_Message() {
-        return INFORMATION_Message;
-    }
-     static String getINFORMATION_Information() {
-        return INFORMATION_Information;
     }
      static String getWARNING_WrongNumberMESSAGE() {
         return WARNING_WrongNumberMESSAGE;

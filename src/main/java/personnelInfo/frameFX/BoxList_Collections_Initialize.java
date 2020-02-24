@@ -4,17 +4,17 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ChoiceBox;
 import personnelInfo.mechanics.enums.SortType;
-import personnelInfo.mechanics.enums.WorkersType;
+import personnelInfo.mechanics.enums.PersonType;
 
-public class BoxListCollectionsInitialize {
+class BoxList_Collections_Initialize {
 
     private ChoiceBox<String> sortByChoiceBox;
     private ChoiceBox<String> workersTypeShowChoiceBox;
     private ChoiceBox<String> workerStatusChoiceBox;
 
-    public BoxListCollectionsInitialize(ChoiceBox<String> sortByChoiceBox,
-                                        ChoiceBox<String> workersTypeShowChoiceBox,
-                                        ChoiceBox<String> workerStatusChoiceBox) {
+    BoxList_Collections_Initialize(ChoiceBox<String> sortByChoiceBox,
+                                   ChoiceBox<String> workersTypeShowChoiceBox,
+                                   ChoiceBox<String> workerStatusChoiceBox) {
         this.sortByChoiceBox = sortByChoiceBox;
         this.workersTypeShowChoiceBox = workersTypeShowChoiceBox;
         this.workerStatusChoiceBox = workerStatusChoiceBox;
@@ -25,9 +25,9 @@ public class BoxListCollectionsInitialize {
     private void initializeChoiceBoxes() {
         sortByChoiceBox.setValue(SortType.SORT_BY_ID.toString());
         sortByChoiceBox.setItems(getSortByChoiceBoxList());
-        workersTypeShowChoiceBox.setValue(WorkersType.ACTUAL_AND_REMOVED.toString());
+        workersTypeShowChoiceBox.setValue(PersonType.ACTUAL_AND_REMOVED.toString());
         workersTypeShowChoiceBox.setItems(getWorkersType_Sort_ChoiceBoxList());
-        workerStatusChoiceBox.setValue(WorkersType.ACTUAL.toString());
+        workerStatusChoiceBox.setValue(PersonType.ACTUAL.toString());
         workerStatusChoiceBox.setItems(getWorkersTypeList());
     }
 
@@ -44,15 +44,15 @@ public class BoxListCollectionsInitialize {
     private ObservableList<String> getWorkersType_Sort_ChoiceBoxList() {
         return FXCollections
                 .observableArrayList(
-                        WorkersType.ACTUAL.toString(),
-                        WorkersType.ACTUAL_AND_REMOVED.toString(),
-                        WorkersType.REMOVED.toString());
+                        PersonType.ACTUAL.toString(),
+                        PersonType.ACTUAL_AND_REMOVED.toString(),
+                        PersonType.REMOVED.toString());
     }
 
     private ObservableList<String> getWorkersTypeList() {
         return FXCollections
                 .observableArrayList(
-                        WorkersType.ACTUAL.toString(),
-                        WorkersType.REMOVED.toString());
+                        PersonType.ACTUAL.toString(),
+                        PersonType.REMOVED.toString());
     }
 }
