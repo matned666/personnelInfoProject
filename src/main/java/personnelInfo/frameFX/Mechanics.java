@@ -1,9 +1,14 @@
+/*
+ * Copyright © 2020 MRN-Design (brand owned by Manufacture-MRN sp. z o.o.) and Mateusz Niedbał
+ * As of January 2020, all rights in any software published by MRN-Design (brand owned by Manufacture-MRN sp. z o.o.) & Mateusz Niedbał will remain with the author. Contact the author with any permission requests.
+ */
+
 package personnelInfo.frameFX;
 
 import javafx.scene.control.TextField;
 import personnelInfo.mechanics.converters.Converting;
-import personnelInfo.mechanics.enums.SortPersonType;
 import personnelInfo.mechanics.enums.PersonType;
+import personnelInfo.mechanics.enums.SortPersonType;
 
 class Mechanics {
 
@@ -70,7 +75,7 @@ class Mechanics {
         return encryptedMovementNumber_FromTextField;
     }
 
-    private static boolean is_CorrectNumeric(String textFieldContent) {
+    public static boolean is_CorrectNumeric(String textFieldContent) {
         if (textFieldContent == null) {
             return false;
         }

@@ -1,3 +1,8 @@
+/*
+ * Copyright © 2020 MRN-Design (brand owned by Manufacture-MRN sp. z o.o.) and Mateusz Niedbał
+ * As of January 2020, all rights in any software published by MRN-Design (brand owned by Manufacture-MRN sp. z o.o.) & Mateusz Niedbał will remain with the author. Contact the author with any permission requests.
+ */
+
 package personnelInfo.frameFX;
 
 import javafx.scene.control.Alert;
@@ -21,7 +26,7 @@ class Messages {
     private final static String INFORMATION_Message = "Made by Mateusz Niedbał";
     private final static String INFORMATION_Information = "All rights reserved :-)";
     private final static String WARNING_WrongNumberMESSAGE = "Wrong number format!";
-    private final static String WARNING_WrongNumberINFO = "Try it with numbers...";
+    private final static String WARNING_WrongNumberINFO = "Try it with numbers... Automaticly changed to '0'";
     private final static String ERROR_IOExceptionMESSAGE = " file has failed. Check it out!";
 
     static void alertMessageDialog(String message,

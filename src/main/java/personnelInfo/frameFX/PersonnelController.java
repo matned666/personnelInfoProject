@@ -7,11 +7,15 @@ package personnelInfo.frameFX;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.jetbrains.annotations.Contract;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
@@ -19,10 +23,13 @@ import personnelInfo.mechanics.Company;
 import personnelInfo.mechanics.Encrypting;
 import personnelInfo.mechanics.Person;
 import personnelInfo.mechanics.converters.Converting;
-import personnelInfo.mechanics.enums.SortPersonType;
 import personnelInfo.mechanics.enums.PersonType;
+import personnelInfo.mechanics.enums.SortPersonType;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -79,6 +86,7 @@ public class PersonnelController {
 
 
     //Constructor
+    @Contract(pure = true)
     public PersonnelController() {
 
     }
@@ -94,20 +102,9 @@ public class PersonnelController {
     }
 
     @FXML
-    private void confirm_ButtonAction() {
-        if (company != null) {
-            setActualPersonData();
-            message("Personal data changed");
-        }else if( actualPerson != null){
-            System.out.println("lol");
-        }else {
-            Messages.alertMessageDialog(Messages.getWARNING_NoPersonSelectedMessage(), Messages.getWARNING_NoPersonSelectedInformation() + ", type his data again and accept.");
-            message("Personal data NOT changed");
-        }
-    }
-
-    @FXML
     private void makeNewCompany_ButtonAction() {
+        if (!Mechanics.is_CorrectNumeric(numberOfWorkersTextField.getText()))
+            numberOfWorkersTextField.setText("0");
         changeLog = "";
         vBoxWithWorkers.getChildren().clear();
         clearAllTextFields();
@@ -116,6 +113,7 @@ public class PersonnelController {
         for (int i = 0; i < company.getListOfWorkers().size(); i++) {
             actualPerson = company.getListOfWorkers().get(i);
             list_Company_PersonFields.add(new PersonField(actualPerson,actualPerson.getID()));
+            actualWorkerButton = list_Company_PersonFields.get(i).getButton();
             personButtonFactoring(list_Company_PersonFields.get(i).getButton(), i);
             vBoxWithWorkers.getChildren().add(list_Company_PersonFields.get(i).getButton());
         }
@@ -124,12 +122,37 @@ public class PersonnelController {
     }
 
     @FXML
+    private void confirm_ButtonAction() {
+        if (company != null) {
+            if (actualPerson != null) {
+                setActualPersonData();
+                message("Personal data changed");
+            }
+            if (actualPerson == null) {
+                if (ageTextField == null) ageTextField.setText("0");
+                addPersonButton();
+                setActualPersonData();
+            }
+        } else {
+            Messages.alertMessageDialog(Messages.getWARNING_NoPersonSelectedMessage(), Messages.getWARNING_NoPersonSelectedInformation() + ", type his data again and accept.");
+            message("Personal data NOT changed");
+        }
+    }
+
+    @FXML
     private void addWorker_ButtonAction() {
+        clearAllTextFields();
+        addPersonButton();
+    }
+
+    private void addPersonButton() {
         if (company == null) makeNewCompany_ButtonAction();
+        setActualPersonTextFieldsData_ToDefault();
         company.addWorker();
         actualPerson = company.getListOfWorkers().get(company.getListOfWorkers().size()-1);
         refreshWorkerButtons();
         message("New empty worker field added");
+        actualWorkerButton = list_Company_PersonFields.get(company.getListOfWorkers().size() - 1).getButton();
     }
 
     @FXML
@@ -142,8 +165,11 @@ public class PersonnelController {
             Messages.alertMessageDialog(Messages.getWARNING_NoPersonSelectedMessage(), Messages.getWARNING_NoPersonSelectedInformation() + " and try to remove him again.");
             message("Unsuccessful worker removal. No worker was selected.");
         } else {
+
             company.removeWorker(actualPerson.getID());
             message("Successful worker +"+actualPerson.getNAME()+" "+actualPerson.getSURNAME()+" removal.");
+            actualPerson = null;
+            actualWorkerButton = null;
             refreshWorkerButtons();
 
         }
@@ -249,7 +275,7 @@ public class PersonnelController {
         list_Company_PersonFields.add(new PersonField(actualPerson,actualPerson.getID()));
         list_Company_PersonFields.get(actualButton).getButton().setPrefSize(430, 30);
         list_Company_PersonFields.get(actualButton).getButton().setOnAction(eventHandler -> {
-            setPersonDataTextFields(actualButton);
+            setPersonDataTextFields();
             actualPerson = list_Company_PersonFields.get(actualButton).getPerson();
             actualWorkerButton = list_Company_PersonFields.get(actualButton).getButton();
         });
@@ -263,7 +289,12 @@ public class PersonnelController {
     }
 
     private void setActualPersonData() {
-        actualPerson.setAGE(convert.integer(ageTextField.getText()));
+        if (Mechanics.is_CorrectNumeric(ageTextField.getText())) {
+            actualPerson.setAGE(convert.integer(ageTextField.getText()));
+        } else {
+            ageTextField.setText("0");
+            actualPerson.setAGE(convert.integer(ageTextField.getText()));
+        }
         actualPerson.setNAME(nameTextField.getText());
         actualPerson.setSURNAME(surnameTextField.getText());
         actualPerson.setPosition(positionTextField.getText());
@@ -271,18 +302,25 @@ public class PersonnelController {
         actualWorkerButton.setText(actualPerson.print());
     }
 
+    private void setActualPersonTextFieldsData_ToDefault() {
+        if (!Mechanics.is_CorrectNumeric(ageTextField.getText())) ageTextField.setText("0");
+        if (nameTextField.getText() == null) nameTextField.setText("");
+        if (surnameTextField.getText() == null) surnameTextField.setText("");
+        if (positionTextField.getText() == null) positionTextField.setText("");
+    }
+
     private void clearVBoxWithWorkersList() {
         vBoxWithWorkers.getChildren().clear();
         list_Company_PersonFields = new LinkedList<>();
     }
 
-    private void setPersonDataTextFields(int idCounter) {
-        nameTextField.setText(company.getListOfWorkers().get(idCounter).getNAME());
-        surnameTextField.setText(company.getListOfWorkers().get(idCounter).getSURNAME());
-        ageTextField.setText(convert.string(company.getListOfWorkers().get(idCounter).getAGE()));
-        positionTextField.setText(company.getListOfWorkers().get(idCounter).getPosition());
-        workersIdTextField.setText(convert.string(company.getListOfWorkers().get(idCounter).getID()));
-        workerStatusChoiceBox.setValue(company.getListOfWorkers().get(idCounter).getWorkerType().toString());
+    private void setPersonDataTextFields() {
+        nameTextField.setText(actualPerson.getNAME());
+        surnameTextField.setText(actualPerson.getSURNAME());
+        ageTextField.setText(convert.string(actualPerson.getAGE()));
+        positionTextField.setText(actualPerson.getPosition());
+        workersIdTextField.setText(convert.string(actualPerson.getID()));
+        workerStatusChoiceBox.setValue(actualPerson.getWorkerType().toString());
     }
 
     private void clearAllTextFields() {
@@ -298,9 +336,9 @@ public class PersonnelController {
                                        int idCounter) {
         button.setPrefSize(430, 30);
         button.setOnAction(eventHandler -> {
-            setPersonDataTextFields(idCounter);
             actualPerson = list_Company_PersonFields.get(idCounter).getPerson();
             actualWorkerButton = list_Company_PersonFields.get(idCounter).getButton();
+            setPersonDataTextFields();
         });
         list_Company_PersonFields.get(idCounter).getButton().setText(company.getListOfWorkers().get(idCounter).print());
         button.setWrapText(true);
@@ -405,7 +443,10 @@ public class PersonnelController {
     }
 
     private void sort(String value) {
-        company.sort(getSortPersonType_BySortText(value), 1);
+        int isREV;
+        if (sortByChoiceBox.getValue().contains("_REV")) isREV = -1;
+        else isREV = 1;
+        company.sort(getSortPersonType_BySortText(value), isREV);
     }
 
     private int getEncryptMove_Number() {
